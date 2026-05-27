@@ -1,0 +1,115 @@
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { TimbradoService } from '../../services/timbrado.service';
+import { TimbradoDto, TimbradoUsoDto } from '../../models/timbrado.models';
+import { formatHttpError } from '../../utils/http-error.utils';
+
+@Component({
+  selector: 'app-timbrados',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './timbrados.component.html',
+})
+export class TimbradosComponent implements OnInit {
+  private readonly timbradoService = inject(TimbradoService);
+
+  timbrados   = signal<TimbradoDto[]>([]);
+  uso         = signal<TimbradoUsoDto | null>(null);
+  loading     = signal(true);
+  error       = signal<string | null>(null);
+
+  filterAnio  = signal<string>('');
+  filterMes   = signal<string>('');
+
+  readonly years  = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+  readonly months = [
+    { val: 1,  label: 'Enero' },    { val: 2,  label: 'Febrero' },
+    { val: 3,  label: 'Marzo' },    { val: 4,  label: 'Abril' },
+    { val: 5,  label: 'Mayo' },     { val: 6,  label: 'Junio' },
+    { val: 7,  label: 'Julio' },    { val: 8,  label: 'Agosto' },
+    { val: 9,  label: 'Septiembre' },{ val: 10, label: 'Octubre' },
+    { val: 11, label: 'Noviembre' },{ val: 12, label: 'Diciembre' },
+  ];
+
+  ngOnInit(): void {
+    this.loadTimbrados();
+    this.timbradoService.getUso().subscribe({
+      next: (u) => this.uso.set(u),
+      error: () => { /* non-critical, ignore */ },
+    });
+  }
+
+  loadTimbrados(): void {
+    this.loading.set(true);
+    this.error.set(null);
+
+    const anio = this.filterAnio() ? parseInt(this.filterAnio()) : undefined;
+    const mes  = this.filterMes()  ? parseInt(this.filterMes())  : undefined;
+
+    this.timbradoService.list(anio, mes).subscribe({
+      next: (list) => {
+        this.timbrados.set(list);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(formatHttpError(err, 'Error al cargar los timbrados.'));
+        this.loading.set(false);
+      },
+    });
+  }
+
+  clearFilters(): void {
+    this.filterAnio.set('');
+    this.filterMes.set('');
+    this.loadTimbrados();
+  }
+
+  downloadXml(t: TimbradoDto): void { this.timbradoService.downloadXml(t); }
+  downloadPdf(t: TimbradoDto): void { this.timbradoService.downloadPdf(t); }
+
+  // ── Display helpers ────────────────────────────────────────────────────────
+
+  formatCurrency(val: number | null): string {
+    if (val === null || val === undefined) return '—';
+    return val.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+  }
+
+  formatDate(iso: string | null): string {
+    if (!iso) return '—';
+    try {
+      return new Date(iso).toLocaleString('es-MX', {
+        dateStyle: 'short',
+        timeStyle: 'short',
+      });
+    } catch { return iso; }
+  }
+
+  tipoLabel(t: string | null): string {
+    switch (t) {
+      case 'I': return 'Ingreso';
+      case 'E': return 'Egreso';
+      case 'T': return 'Traslado';
+      case 'N': return 'Nómina';
+      case 'P': return 'Pago';
+      default:  return t ?? '—';
+    }
+  }
+
+  tipoBadgeCls(t: string | null): string {
+    switch (t) {
+      case 'I': return 'bg-emerald-100 text-emerald-700';
+      case 'E': return 'bg-red-100 text-red-700';
+      default:  return 'bg-slate-100 text-slate-600';
+    }
+  }
+
+  onAnioInput(e: Event)  { this.filterAnio.set((e.target as HTMLSelectElement).value); }
+  onMesInput(e: Event)   { this.filterMes.set((e.target as HTMLSelectElement).value);  }
+
+  usoPorcentaje(): number {
+    const u = this.uso();
+    if (!u || u.esPlanIlimitado || u.incluidos === 0) return 0;
+    return Math.min(100, Math.round((u.realizados / u.incluidos) * 100));
+  }
+}

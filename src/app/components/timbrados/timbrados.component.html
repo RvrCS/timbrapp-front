@@ -1,0 +1,239 @@
+<div class="p-6 max-w-6xl mx-auto">
+
+  <!-- Header -->
+  <div class="mb-6 flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-xl font-bold text-slate-900">Historial de timbrados</h1>
+      <p class="text-sm text-slate-500 mt-0.5">
+        CFDIs timbrables generados y sellados con el SAT.
+      </p>
+    </div>
+  </div>
+
+  <!-- ── Uso del plan ──────────────────────────────────────────────────────── -->
+  @if (uso()) {
+    <div class="bg-white rounded-2xl border shadow-sm p-4 mb-5"
+         [class.border-amber-300]="!uso()!.esPlanIlimitado && uso()!.excedentes > 0"
+         [class.border-slate-200]="uso()!.esPlanIlimitado || uso()!.excedentes === 0">
+
+      <div class="flex items-center justify-between mb-2">
+        <p class="text-sm font-semibold text-slate-700">Timbrados este mes</p>
+        @if (uso()!.esPlanIlimitado) {
+          <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">Plan ilimitado</span>
+        } @else {
+          <span class="text-xs font-medium text-slate-500">
+            {{ uso()!.realizados }} / {{ uso()!.incluidos }}
+          </span>
+        }
+      </div>
+
+      @if (!uso()!.esPlanIlimitado) {
+        <div class="w-full bg-slate-100 rounded-full h-2 mb-2 overflow-hidden">
+          <div class="h-2 rounded-full transition-all duration-500"
+               [class.bg-indigo-500]="uso()!.excedentes === 0"
+               [class.bg-amber-500]="uso()!.excedentes > 0"
+               [style.width.%]="usoPorcentaje()">
+          </div>
+        </div>
+
+        @if (uso()!.excedentes > 0) {
+          <p class="text-xs text-amber-700 font-medium">
+            {{ uso()!.excedentes }} excedente{{ uso()!.excedentes > 1 ? 's' : '' }}
+            &rarr; ${{ uso()!.costoExcedentesMxn | number:'1.2-2' }} MXN
+          </p>
+        }
+      }
+    </div>
+  }
+
+  <!-- ── Filters ──────────────────────────────────────────────────────────── -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 mb-5 flex flex-wrap items-end gap-3">
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Año</label>
+      <select
+        class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700
+               focus:outline-none focus:ring-2 focus:ring-indigo-400 min-w-[100px]"
+        [value]="filterAnio()"
+        (change)="onAnioInput($event)">
+        <option value="">Todos</option>
+        @for (y of years; track y) {
+          <option [value]="y">{{ y }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Mes</label>
+      <select
+        class="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700
+               focus:outline-none focus:ring-2 focus:ring-indigo-400 min-w-[130px]"
+        [value]="filterMes()"
+        (change)="onMesInput($event)">
+        <option value="">Todos</option>
+        @for (m of months; track m.val) {
+          <option [value]="m.val">{{ m.label }}</option>
+        }
+      </select>
+    </div>
+
+    <button
+      (click)="loadTimbrados()"
+      class="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold
+             bg-indigo-600 text-white hover:bg-indigo-700 transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+      </svg>
+      Filtrar
+    </button>
+
+    @if (filterAnio() || filterMes()) {
+      <button
+        (click)="clearFilters()"
+        class="text-xs text-slate-400 hover:text-slate-600 underline underline-offset-2 transition-colors">
+        Limpiar filtros
+      </button>
+    }
+  </div>
+
+  <!-- ── Loading ──────────────────────────────────────────────────────────── -->
+  @if (loading()) {
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 flex flex-col items-center gap-3">
+      <svg class="w-7 h-7 text-indigo-400 animate-spin" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+      </svg>
+      <p class="text-sm text-slate-500">Cargando historial…</p>
+    </div>
+  }
+
+  <!-- ── Error ────────────────────────────────────────────────────────────── -->
+  @if (!loading() && error()) {
+    <div class="bg-red-50 border border-red-200 rounded-2xl p-6 flex items-center gap-3 text-sm text-red-700">
+      <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      {{ error() }}
+    </div>
+  }
+
+  <!-- ── Empty ────────────────────────────────────────────────────────────── -->
+  @if (!loading() && !error() && timbrados().length === 0) {
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-12 flex flex-col items-center gap-3 text-center">
+      <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9.414V19a2 2 0 01-2 2z"/>
+      </svg>
+      <p class="text-sm font-semibold text-slate-500">Sin timbrados
+        @if (filterAnio() || filterMes()) { en el periodo seleccionado }
+      </p>
+      <p class="text-xs text-slate-400">
+        Los CFDIs timbrados aparecerán aquí en cuanto generes el primero.
+      </p>
+    </div>
+  }
+
+  <!-- ── Table ────────────────────────────────────────────────────────────── -->
+  @if (!loading() && !error() && timbrados().length > 0) {
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+
+      <!-- Summary bar -->
+      <div class="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+        <p class="text-xs text-slate-500">
+          <span class="font-semibold text-slate-700">{{ timbrados().length }}</span>
+          timbrado{{ timbrados().length !== 1 ? 's' : '' }}
+        </p>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-slate-50 border-b border-slate-200">
+              <th class="text-left px-3 sm:px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Fecha</th>
+              <th class="text-left px-3 sm:px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide hidden sm:table-cell">UUID</th>
+              <th class="text-left px-3 sm:px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Receptor</th>
+              <th class="text-left px-3 sm:px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide hidden sm:table-cell">Tipo</th>
+              <th class="text-right px-3 sm:px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Total</th>
+              <th class="text-center px-3 sm:px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">Arch.</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (t of timbrados(); track t.id) {
+              <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+
+                <!-- Fecha -->
+                <td class="px-3 sm:px-4 py-3 text-xs text-slate-600 whitespace-nowrap">
+                  {{ formatDate(t.fechaTimbrado ?? t.fechaEmision) }}
+                </td>
+
+                <!-- UUID (hidden on mobile) -->
+                <td class="px-3 sm:px-4 py-3 hidden sm:table-cell">
+                  @if (t.uuid) {
+                    <span class="font-mono text-xs text-slate-700 select-all" title="{{ t.uuid }}">
+                      {{ t.uuid.substring(0, 8) }}…
+                    </span>
+                  } @else {
+                    <span class="text-slate-400 text-xs">—</span>
+                  }
+                </td>
+
+                <!-- Receptor -->
+                <td class="px-3 sm:px-4 py-3 max-w-[10rem] sm:max-w-none">
+                  <p class="font-medium text-slate-800 leading-tight truncate">{{ t.nombreReceptor ?? '—' }}</p>
+                  <p class="font-mono text-xs text-slate-400 hidden sm:block">{{ t.rfcReceptor }}</p>
+                </td>
+
+                <!-- Tipo badge (hidden on mobile) -->
+                <td class="px-3 sm:px-4 py-3 hidden sm:table-cell">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold {{ tipoBadgeCls(t.tipoComprobante) }}">
+                    {{ tipoLabel(t.tipoComprobante) }}
+                  </span>
+                </td>
+
+                <!-- Total -->
+                <td class="px-3 sm:px-4 py-3 text-right font-semibold text-slate-800 whitespace-nowrap text-xs sm:text-sm">
+                  {{ formatCurrency(t.total) }}
+                </td>
+
+                <!-- Download buttons -->
+                <td class="px-3 sm:px-4 py-3">
+                  <div class="flex items-center justify-center gap-1 sm:gap-2">
+                    <button
+                      (click)="downloadXml(t)"
+                      [disabled]="!t.xmlBase64"
+                      title="Descargar XML"
+                      class="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 sm:py-1 rounded-lg text-xs font-semibold
+                             bg-slate-800 text-white hover:bg-slate-700 transition-colors
+                             disabled:opacity-30 disabled:cursor-not-allowed">
+                      <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 10v6m0 0l-3-3m3 3l3-3M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/>
+                      </svg>
+                      <span class="hidden sm:inline">XML</span>
+                    </button>
+                    <button
+                      (click)="downloadPdf(t)"
+                      [disabled]="!t.pdfBase64"
+                      title="Descargar PDF"
+                      class="inline-flex items-center gap-1 px-2 sm:px-2.5 py-1.5 sm:py-1 rounded-lg text-xs font-semibold
+                             bg-red-600 text-white hover:bg-red-700 transition-colors
+                             disabled:opacity-30 disabled:cursor-not-allowed">
+                      <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 10v6m0 0l-3-3m3 3l3-3M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2"/>
+                      </svg>
+                      <span class="hidden sm:inline">PDF</span>
+                    </button>
+                  </div>
+                </td>
+
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+</div>

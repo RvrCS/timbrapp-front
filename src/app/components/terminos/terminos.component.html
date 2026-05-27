@@ -1,0 +1,290 @@
+<div class="min-h-screen bg-slate-50">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+      <span class="text-lg font-bold text-indigo-700 tracking-tight">TimbrApp</span>
+      <a routerLink="/login" class="text-sm text-indigo-600 hover:underline">← Volver al inicio</a>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="max-w-4xl mx-auto px-6 py-12">
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 md:p-12 space-y-8">
+
+      <div class="border-b border-slate-100 pb-6">
+        <h1 class="text-3xl font-bold text-slate-900">Términos y Condiciones de Uso</h1>
+        <p class="mt-2 text-sm text-slate-500">
+          Última actualización: 26 de mayo de 2026 &nbsp;·&nbsp; Versión 1.0
+        </p>
+        <div class="mt-4 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+          <strong>Importante:</strong> Lea detenidamente estos términos antes de usar TimbrApp.
+          Al crear una cuenta o acceder al servicio, usted acepta quedar vinculado por las
+          presentes condiciones.
+        </div>
+      </div>
+
+      <!-- 1. Definiciones -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">1. Definiciones</h2>
+        <div class="space-y-2 text-slate-700">
+          <p><strong>"Plataforma"</strong>: el servicio web TimbrApp, accesible en <em>timbrapp.rinarasoft.com</em> y cualquier subdominio relacionado.</p>
+          <p><strong>"Prestador"</strong>: Rinarasoft, persona moral responsable de operar la Plataforma.</p>
+          <p><strong>"Usuario"</strong>: persona física o moral que crea una cuenta y usa la Plataforma.</p>
+          <p><strong>"CFDI"</strong>: Comprobante Fiscal Digital por Internet en su versión 4.0, conforme al artículo 29-A del Código Fiscal de la Federación (CFF).</p>
+          <p><strong>"Timbrado"</strong>: proceso de certificación de un CFDI mediante un PAC autorizado por el SAT que asigna el Timbre Fiscal Digital (TFD).</p>
+          <p><strong>"PAC"</strong>: Proveedor Autorizado de Certificación autorizado por el SAT para efectuar el timbrado de CFDI.</p>
+          <p><strong>"CSD"</strong>: Certificado de Sello Digital emitido por el SAT al Usuario para firmar CFDI.</p>
+          <p><strong>"Licencia"</strong>: plan de acceso contratado por el Usuario que determina el número de CFDI que puede timbrar.</p>
+        </div>
+      </section>
+
+      <!-- 2. Objeto -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">2. Objeto del servicio</h2>
+        <p class="text-slate-700 leading-relaxed">
+          TimbrApp es una plataforma de software como servicio (SaaS) que facilita al Usuario
+          la emisión, timbrado, almacenamiento y descarga de CFDI 4.0 mediante la integración
+          con un PAC autorizado por el SAT. El Prestador actúa como intermediario tecnológico
+          y <strong>no es PAC</strong>; el timbrado efectivo es realizado por el PAC
+          <strong>Facturama</strong>, conforme a su autorización vigente ante el SAT.
+        </p>
+      </section>
+
+      <!-- 3. Registro y cuenta -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">3. Registro y cuenta de usuario</h2>
+        <ul class="list-disc list-inside space-y-2 text-slate-700">
+          <li>El Usuario debe ser mayor de 18 años o actuar en representación legal de una persona moral.</li>
+          <li>La información proporcionada al registrarse (RFC, razón social, datos fiscales) debe ser veraz, exacta y vigente. El Usuario es responsable de mantenerla actualizada.</li>
+          <li>El Usuario es el único responsable de la confidencialidad de su contraseña y del acceso a su cuenta. Debe notificar de inmediato al Prestador ante cualquier uso no autorizado.</li>
+          <li>No está permitida la cesión o transferencia de cuentas a terceros sin autorización escrita del Prestador.</li>
+          <li>El Prestador se reserva el derecho de suspender o cancelar cuentas que incumplan los presentes Términos.</li>
+        </ul>
+      </section>
+
+      <!-- 4. Uso del CSD -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">4. Uso y custodia del Certificado de Sello Digital (CSD)</h2>
+        <p class="text-slate-700 leading-relaxed">
+          Para operar el servicio, el Usuario carga su CSD (archivos <code class="bg-slate-100 px-1 rounded">.cer</code>
+          y <code class="bg-slate-100 px-1 rounded">.key</code>) y su contraseña. Al hacerlo:
+        </p>
+        <ul class="list-disc list-inside space-y-2 text-slate-700">
+          <li>El Usuario declara ser el legítimo titular del CSD y estar autorizado por el SAT para su uso.</li>
+          <li>El Prestador almacena el CSD cifrado en reposo; la clave privada <strong>nunca</strong> es transmitida en texto claro ni almacenada sin cifrado.</li>
+          <li>El Usuario entiende que revocar o renovar su CSD ante el SAT requiere actualizar los datos en la Plataforma; el Prestador no se responsabiliza por timbrados fallidos derivados de un CSD vencido, revocado o incorrecto.</li>
+          <li>El Usuario no deberá cargar CSD de terceros sin su consentimiento expreso y autorización legal. El Prestador no verifica la titularidad del CSD y no asume responsabilidad por uso indebido.</li>
+        </ul>
+      </section>
+
+      <!-- 5. Obligaciones del Usuario -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">5. Obligaciones del Usuario</h2>
+        <p class="text-slate-700 font-medium">El Usuario se obliga a:</p>
+        <ul class="list-disc list-inside space-y-2 text-slate-700">
+          <li>Cumplir con todas las disposiciones fiscales aplicables: CFF, LISR, LIVA, Resolución Miscelánea Fiscal (RMF) vigente y demás regulación del SAT relativa a la emisión de CFDI.</li>
+          <li>Proporcionar datos correctos y completos en cada CFDI que genere. Es su responsabilidad exclusiva la exactitud de los datos del emisor, receptor, conceptos, impuestos y demás elementos del comprobante.</li>
+          <li>Verificar que el RFC del receptor exista y sea válido en el padrón del SAT antes de emitir el CFDI.</li>
+          <li>No utilizar la Plataforma para emitir CFDI de operaciones inexistentes, simuladas o con propósito de evasión fiscal (EFOS/EDOS conforme al artículo 69-B del CFF).</li>
+          <li>No intentar vulnerar la seguridad de la Plataforma, realizar ingeniería inversa, ni acceder a datos de otros Usuarios.</li>
+          <li>No utilizar la Plataforma para actividades ilegales, fraudulentas o que violen derechos de terceros.</li>
+          <li>Conservar los CFDI y demás documentación fiscal conforme al artículo 30 del CFF (mínimo 5 años). TimbrApp facilita esta conservación pero no sustituye la obligación legal del contribuyente.</li>
+        </ul>
+      </section>
+
+      <!-- 6. Licencias y Pagos -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">6. Licencias, precios y pagos</h2>
+
+        <div class="space-y-2">
+          <h3 class="font-semibold text-slate-700">6.1 Planes y precios</h3>
+          <p class="text-slate-700 leading-relaxed">
+            El servicio se contrata mediante planes de licencia publicados en la Plataforma.
+            Los precios están expresados en Moneda Nacional (MXN) e incluyen el IVA vigente
+            (16%), salvo indicación expresa en contrario. El Prestador se reserva el derecho
+            de modificar precios con previo aviso de 30 días naturales.
+          </p>
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="font-semibold text-slate-700">6.2 Facturación y pago</h3>
+          <ul class="list-disc list-inside space-y-2 text-slate-700">
+            <li>El cobro se realiza de forma anticipada al inicio de cada período contratado (mensual, anual u otro).</li>
+            <li>El pago se efectúa mediante los métodos disponibles en la Plataforma, procesados por un proveedor externo de pagos. El Prestador no almacena datos de tarjeta de crédito/débito.</li>
+            <li>La falta de pago a la fecha de vencimiento podrá resultar en la suspensión del acceso hasta regularizar el adeudo.</li>
+            <li>El Usuario puede solicitar su CFDI de pago al Prestador conforme a las disposiciones fiscales vigentes.</li>
+          </ul>
+        </div>
+
+        <div class="space-y-2">
+          <h3 class="font-semibold text-slate-700">6.3 Política de reembolsos</h3>
+          <p class="text-slate-700 leading-relaxed">
+            Dado que el servicio implica consumo de timbres PAC con costo inmediato al momento
+            de cada operación, <strong>no se emiten reembolsos</strong> por timbres ya utilizados.
+            Para planes no utilizados, el Usuario podrá solicitar reembolso proporcional dentro de
+            los primeros <strong>7 días naturales</strong> del período contratado, siempre que
+            no haya timbrado ningún CFDI en dicho período. Las solicitudes deben enviarse a
+            <a href="mailto:soporte@rinarasoft.com" class="text-indigo-600 hover:underline">soporte@rinarasoft.com</a>.
+          </p>
+        </div>
+      </section>
+
+      <!-- 7. Limitación de responsabilidad -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">7. Limitación de responsabilidad</h2>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 space-y-3 text-slate-700">
+          <p>
+            <strong>7.1 Datos del CFDI:</strong> El Prestador no verifica la exactitud fiscal,
+            contable o legal de los datos que el Usuario introduce en los CFDI. Errores en RFC,
+            nombre del receptor, importe, impuestos o cualquier otro campo son responsabilidad
+            exclusiva del Usuario. Las obligaciones fiscales derivadas de CFDI emitidos incorrectamente
+            recaen íntegramente en el Usuario como contribuyente.
+          </p>
+          <p>
+            <strong>7.2 Timbrado por PAC:</strong> El proceso de certificación (timbrado) es
+            ejecutado por <strong>Facturama</strong>. El Prestador no garantiza la disponibilidad
+            ininterrumpida del PAC ni asume responsabilidad por fallas, rechazos o tiempos de
+            respuesta del mismo. En caso de falla del PAC, el Prestador hará esfuerzos razonables
+            para resolverlo, pero no compensará timbres fallidos originados por causas ajenas a su control.
+          </p>
+          <p>
+            <strong>7.3 Obligaciones fiscales:</strong> TimbrApp es una herramienta de apoyo.
+            El Usuario es el contribuyente responsable ante el SAT; el Prestador no asesora
+            fiscalmente ni garantiza el cumplimiento legal de las operaciones del Usuario.
+          </p>
+          <p>
+            <strong>7.4 Disponibilidad:</strong> El Prestador procurará una disponibilidad del
+            99% mensual, pero no garantiza servicio ininterrumpido. Se excluye responsabilidad
+            por daños derivados de interrupciones por mantenimiento programado (notificado con
+            al menos 24 horas), causas de fuerza mayor, fallas de terceros (internet, SAT, PAC)
+            o ataques cibernéticos.
+          </p>
+          <p>
+            <strong>7.5 Límite de responsabilidad:</strong> En ningún caso la responsabilidad
+            total del Prestador por daños directos excederá el monto pagado por el Usuario en
+            los últimos <strong>3 meses</strong> anteriores al evento que generó el daño.
+            El Prestador no será responsable por daños indirectos, lucro cesante, pérdida de datos
+            o daños consecuentes de ningún tipo.
+          </p>
+        </div>
+      </section>
+
+      <!-- 8. Cancelación y vigencia del CFDI -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">8. Cancelación de CFDI</h2>
+        <p class="text-slate-700 leading-relaxed">
+          La cancelación de CFDI emitidos está sujeta a las reglas del SAT vigentes (RMF),
+          que pueden requerir aceptación del receptor. TimbrApp facilita la solicitud de
+          cancelación a través del PAC, pero no garantiza que la cancelación sea aceptada
+          ni modifica las obligaciones fiscales del Usuario derivadas del comprobante original.
+          El Usuario es responsable de cumplir los plazos y requisitos de cancelación
+          establecidos por el SAT.
+        </p>
+      </section>
+
+      <!-- 9. Propiedad intelectual -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">9. Propiedad intelectual</h2>
+        <p class="text-slate-700 leading-relaxed">
+          La Plataforma, incluyendo su código fuente, diseño, logotipos, marcas, textos e
+          interfaces, es propiedad exclusiva de Rinarasoft y está protegida por la
+          <em>Ley Federal del Derecho de Autor</em> y la <em>Ley de la Propiedad Industrial</em>
+          de los Estados Unidos Mexicanos. Se concede al Usuario una licencia de uso personal,
+          intransferible y no exclusiva para acceder al servicio durante la vigencia del contrato.
+          Queda prohibida la reproducción, distribución, modificación o explotación comercial
+          de cualquier elemento de la Plataforma sin autorización escrita del Prestador.
+        </p>
+      </section>
+
+      <!-- 10. Suspensión y terminación -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">10. Suspensión y terminación del servicio</h2>
+        <div class="space-y-2 text-slate-700">
+          <p><strong>Por el Usuario:</strong> Puede cancelar su cuenta en cualquier momento desde la Plataforma o contactando a soporte. La cancelación surte efectos al final del período facturado.</p>
+          <p><strong>Por el Prestador — causas justificadas:</strong> El Prestador puede suspender o terminar el acceso de forma inmediata, sin responsabilidad, si el Usuario: incumple estos Términos; proporciona datos falsos; usa la Plataforma para actividades ilícitas; abusa del servicio técnicamente; o no paga.</p>
+          <p><strong>Efectos de la terminación:</strong> Al concluir la relación, el Usuario tendrá 30 días para descargar sus CFDI. Pasado ese plazo el Prestador podrá eliminar los datos, conservando únicamente los que exija la ley.</p>
+          <p><strong>Discontinuación del servicio:</strong> Si el Prestador decide discontinuar la Plataforma, notificará al Usuario con al menos <strong>90 días naturales</strong> de anticipación.</p>
+        </div>
+      </section>
+
+      <!-- 11. Modificaciones -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">11. Modificaciones a los Términos</h2>
+        <p class="text-slate-700 leading-relaxed">
+          El Prestador puede modificar estos Términos. Los cambios se notificarán con al menos
+          <strong>15 días naturales</strong> de anticipación mediante aviso en la Plataforma
+          y/o correo electrónico. Si el Usuario no está de acuerdo con los cambios, puede
+          cancelar su cuenta antes de la fecha de entrada en vigor. El uso continuado del
+          servicio después de esa fecha implica aceptación de los nuevos términos.
+        </p>
+      </section>
+
+      <!-- 12. Ley aplicable y jurisdicción -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">12. Ley aplicable, jurisdicción y resolución de controversias</h2>
+        <p class="text-slate-700 leading-relaxed">
+          Estos Términos se rigen por las leyes de los <strong>Estados Unidos Mexicanos</strong>.
+          Para la interpretación y cumplimiento de los mismos, las partes se someten expresamente
+          a la jurisdicción de los tribunales competentes de la <strong>Ciudad de México</strong>,
+          renunciando a cualquier otro fuero que por razón de sus domicilios presentes o futuros
+          pudiera corresponderles.
+        </p>
+        <p class="text-slate-700 leading-relaxed">
+          Antes de acudir a instancias judiciales, las partes se comprometen a intentar resolver
+          cualquier controversia de buena fe mediante comunicación directa durante un período
+          de <strong>30 días naturales</strong>.
+        </p>
+      </section>
+
+      <!-- 13. Disposiciones generales -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">13. Disposiciones generales</h2>
+        <ul class="list-disc list-inside space-y-2 text-slate-700">
+          <li><strong>Totalidad del acuerdo:</strong> Estos Términos, junto con el Aviso de Privacidad, constituyen el acuerdo completo entre las partes respecto al uso de la Plataforma.</li>
+          <li><strong>Divisibilidad:</strong> Si alguna cláusula es declarada inválida por autoridad competente, las demás cláusulas permanecerán en plena vigencia.</li>
+          <li><strong>No renuncia:</strong> El no ejercicio de algún derecho por el Prestador no constituye renuncia al mismo.</li>
+          <li><strong>Contacto:</strong> Para dudas sobre estos Términos: <a href="mailto:soporte@rinarasoft.com" class="text-indigo-600 hover:underline">soporte@rinarasoft.com</a></li>
+        </ul>
+      </section>
+
+      <!-- Legislación de referencia -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">Legislación de referencia</h2>
+        <div class="bg-slate-50 rounded-xl p-5">
+          <ul class="list-disc list-inside space-y-1 text-sm text-slate-600 columns-2">
+            <li>Código Fiscal de la Federación (CFF)</li>
+            <li>Ley del Impuesto al Valor Agregado (LIVA)</li>
+            <li>Ley del Impuesto Sobre la Renta (LISR)</li>
+            <li>Resolución Miscelánea Fiscal vigente</li>
+            <li>Anexo 20 del SAT (CFDI 4.0)</li>
+            <li>Ley Federal de Protección de Datos Personales en Posesión de los Particulares</li>
+            <li>Ley Federal del Derecho de Autor</li>
+            <li>Ley de la Propiedad Industrial</li>
+            <li>NOM-151-SCFI-2016 (conservación de mensajes de datos)</li>
+            <li>Ley de Firma Electrónica Avanzada</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Footer del documento -->
+      <div class="border-t border-slate-100 pt-6 text-sm text-slate-500 space-y-1">
+        <p>Fecha de última actualización: 26 de mayo de 2026</p>
+        <p>Prestador: Rinarasoft — <a href="mailto:soporte@rinarasoft.com" class="text-indigo-600 hover:underline">soporte@rinarasoft.com</a></p>
+        <p class="italic text-xs mt-2">
+          Estos Términos son parte integral del contrato entre Rinarasoft y el Usuario.
+          Se recomienda imprimirlos o guardar una copia para su referencia.
+        </p>
+      </div>
+
+    </div>
+
+    <p class="text-center text-xs text-slate-400 mt-8">
+      TimbrApp &mdash; Rinarasoft © {{ currentYear }}
+      &nbsp;·&nbsp;
+      <a routerLink="/privacidad" class="text-indigo-500 hover:underline">Aviso de Privacidad</a>
+    </p>
+
+  </main>
+</div>

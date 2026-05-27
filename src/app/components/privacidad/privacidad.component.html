@@ -1,0 +1,270 @@
+<div class="min-h-screen bg-slate-50">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+      <span class="text-lg font-bold text-indigo-700 tracking-tight">TimbrApp</span>
+      <a routerLink="/login" class="text-sm text-indigo-600 hover:underline">← Volver al inicio</a>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="max-w-4xl mx-auto px-6 py-12">
+
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-8 md:p-12 space-y-8">
+
+      <div class="border-b border-slate-100 pb-6">
+        <h1 class="text-3xl font-bold text-slate-900">Aviso de Privacidad</h1>
+        <p class="mt-2 text-sm text-slate-500">
+          Última actualización: 26 de mayo de 2026 &nbsp;·&nbsp; Versión 1.0
+        </p>
+      </div>
+
+      <!-- 1. Identidad del Responsable -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">1. Identidad y domicilio del responsable</h2>
+        <p class="text-slate-700 leading-relaxed">
+          <strong>Rinarasoft</strong> (<strong>"el Responsable"</strong>), con domicilio en
+          <strong>Saint Tella 2034, 85199, Residencial Galena</strong>, RFC <strong>TOUR001014IG5</strong>,
+          es responsable del tratamiento de los datos personales que usted nos proporcione al
+          usar la plataforma <em>TimbrApp</em>, de conformidad con la
+          <em>Ley Federal de Protección de Datos Personales en Posesión de los Particulares</em>
+          (LFPDPPP), su Reglamento y los Lineamientos del Aviso de Privacidad emitidos por el INAI.
+        </p>
+        <p class="text-slate-700 leading-relaxed">
+          Para cualquier asunto relacionado con el presente Aviso puede contactarnos en:
+          <a href="mailto:legal@rinarasoft.com" class="text-indigo-600 hover:underline font-medium">legal@rinarasoft.com</a>
+        </p>
+      </section>
+
+      <!-- 2. Datos recabados -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">2. Datos personales que recabamos</h2>
+        <p class="text-slate-700 leading-relaxed">
+          Para brindar los servicios de timbrado de Comprobantes Fiscales Digitales por Internet
+          (CFDI 4.0) recabamos las siguientes categorías de datos:
+        </p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="bg-slate-50">
+                <th class="text-left px-4 py-2 border border-slate-200 font-semibold text-slate-700">Categoría</th>
+                <th class="text-left px-4 py-2 border border-slate-200 font-semibold text-slate-700">Datos específicos</th>
+              </tr>
+            </thead>
+            <tbody class="text-slate-700">
+              <tr>
+                <td class="px-4 py-2 border border-slate-200 font-medium">Identificación</td>
+                <td class="px-4 py-2 border border-slate-200">Nombre completo o razón social, correo electrónico, contraseña (almacenada con hash bcrypt)</td>
+              </tr>
+              <tr class="bg-slate-50/50">
+                <td class="px-4 py-2 border border-slate-200 font-medium">Fiscales y patrimoniales</td>
+                <td class="px-4 py-2 border border-slate-200">RFC del emisor, régimen fiscal, domicilio fiscal, Certificado de Sello Digital (CSD) — clave pública y privada cifrada en tránsito —, contraseña del CSD</td>
+              </tr>
+              <tr>
+                <td class="px-4 py-2 border border-slate-200 font-medium">Datos de CFDI</td>
+                <td class="px-4 py-2 border border-slate-200">RFC y nombre del receptor, conceptos, importes, método y forma de pago, uso de CFDI, UUID resultante</td>
+              </tr>
+              <tr class="bg-slate-50/50">
+                <td class="px-4 py-2 border border-slate-200 font-medium">Pago y facturación</td>
+                <td class="px-4 py-2 border border-slate-200">Datos de facturación, historial de pagos. Los datos de tarjeta son procesados directamente por el proveedor de pago (no los almacenamos)</td>
+              </tr>
+              <tr>
+                <td class="px-4 py-2 border border-slate-200 font-medium">Técnicos y de uso</td>
+                <td class="px-4 py-2 border border-slate-200">Dirección IP, tipo de navegador, logs de acceso y operación para auditoría y seguridad</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-sm text-slate-500 italic">
+          No recabamos datos sensibles conforme al artículo 3, fracción VI de la LFPDPPP
+          (salud, biométricos, religión, etc.).
+        </p>
+      </section>
+
+      <!-- 3. Finalidades -->
+      <section class="space-y-4">
+        <h2 class="text-xl font-semibold text-slate-800">3. Finalidades del tratamiento</h2>
+
+        <div>
+          <h3 class="font-semibold text-slate-700 mb-2">3.1 Finalidades primarias (necesarias para el servicio)</h3>
+          <ul class="list-disc list-inside space-y-1 text-slate-700">
+            <li>Crear y administrar su cuenta de usuario en TimbrApp.</li>
+            <li>Procesar el timbrado de CFDI 4.0 a través de un Proveedor Autorizado de Certificación (PAC) autorizado por el SAT.</li>
+            <li>Almacenar y poner a su disposición los comprobantes timbrados (XML y PDF).</li>
+            <li>Gestionar licencias, suscripciones y facturación del servicio.</li>
+            <li>Brindar soporte técnico y atención a clientes.</li>
+            <li>Cumplir con obligaciones legales, fiscales y regulatorias aplicables (CFF, LISR, LIVA, NOM-151-SCFI-2016).</li>
+            <li>Prevenir fraude, garantizar la seguridad de la plataforma y realizar auditorías internas.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-slate-700 mb-2">3.2 Finalidades secundarias (opcionales)</h3>
+          <ul class="list-disc list-inside space-y-1 text-slate-700">
+            <li>Enviarle comunicaciones comerciales, actualizaciones de producto y promociones de Rinarasoft.</li>
+            <li>Realizar análisis estadísticos y de uso para mejorar el servicio (datos anonimizados o agregados).</li>
+          </ul>
+          <p class="mt-2 text-slate-600 text-sm">
+            Si no desea que sus datos sean tratados para finalidades secundarias, envíe un correo a
+            <a href="mailto:legal@rinarasoft.com" class="text-indigo-600 hover:underline">legal@rinarasoft.com</a>
+            indicando "No finalidades secundarias" dentro de los 5 días hábiles siguientes al registro.
+            La negativa no afectará el acceso al servicio.
+          </p>
+        </div>
+      </section>
+
+      <!-- 4. Transferencias -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">4. Transferencias de datos personales</h2>
+        <p class="text-slate-700 leading-relaxed">
+          Para cumplir con las finalidades primarias, sus datos podrán ser compartidos con:
+        </p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse">
+            <thead>
+              <tr class="bg-slate-50">
+                <th class="text-left px-4 py-2 border border-slate-200 font-semibold text-slate-700">Destinatario</th>
+                <th class="text-left px-4 py-2 border border-slate-200 font-semibold text-slate-700">Finalidad</th>
+                <th class="text-left px-4 py-2 border border-slate-200 font-semibold text-slate-700">Consentimiento requerido</th>
+              </tr>
+            </thead>
+            <tbody class="text-slate-700">
+              <tr>
+                <td class="px-4 py-2 border border-slate-200">Facturama — PAC autorizado SAT</td>
+                <td class="px-4 py-2 border border-slate-200">Timbrado de CFDI 4.0</td>
+                <td class="px-4 py-2 border border-slate-200">No requiere (necesario para servicio contratado — Art. 37, fracc. I LFPDPPP)</td>
+              </tr>
+              <tr class="bg-slate-50/50">
+                <td class="px-4 py-2 border border-slate-200">Proveedor de procesamiento de pagos</td>
+                <td class="px-4 py-2 border border-slate-200">Cobro de suscripción / licencias</td>
+                <td class="px-4 py-2 border border-slate-200">No requiere (relación jurídica — Art. 37, fracc. I LFPDPPP)</td>
+              </tr>
+              <tr>
+                <td class="px-4 py-2 border border-slate-200">Proveedores de infraestructura en nube</td>
+                <td class="px-4 py-2 border border-slate-200">Hospedaje seguro de datos y aplicación</td>
+                <td class="px-4 py-2 border border-slate-200">No requiere (encargado de tratamiento — Art. 50 Reglamento LFPDPPP)</td>
+              </tr>
+              <tr class="bg-slate-50/50">
+                <td class="px-4 py-2 border border-slate-200">Autoridades fiscales (SAT, IMSS, etc.)</td>
+                <td class="px-4 py-2 border border-slate-200">Requerimientos legales o resoluciones judiciales</td>
+                <td class="px-4 py-2 border border-slate-200">No requiere (obligación legal — Art. 37, fracc. II LFPDPPP)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-slate-700">
+          No realizamos transferencias de datos a terceros distintos a los señalados sin su consentimiento expreso,
+          ni vendemos bases de datos.
+        </p>
+      </section>
+
+      <!-- 5. Derechos ARCO -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">5. Derechos ARCO y mecanismo para ejercerlos</h2>
+        <p class="text-slate-700 leading-relaxed">
+          Usted tiene derecho a <strong>Acceder</strong>, <strong>Rectificar</strong>,
+          <strong>Cancelar</strong> y <strong>Oponerse</strong> al tratamiento de sus datos personales
+          (derechos ARCO), conforme a los artículos 22–35 de la LFPDPPP.
+        </p>
+        <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-5 space-y-2 text-sm text-slate-700">
+          <p><strong>Medio:</strong> Correo electrónico a <a href="mailto:legal@rinarasoft.com" class="text-indigo-600 hover:underline">legal@rinarasoft.com</a> con asunto "Derechos ARCO".</p>
+          <p><strong>Información requerida:</strong> Nombre completo, correo registrado, copia de identificación oficial vigente, descripción clara del derecho que desea ejercer.</p>
+          <p><strong>Plazo de respuesta:</strong> 20 días hábiles a partir de la recepción, prorrogables por 20 días más cuando sea necesario.</p>
+          <p><strong>Gratuidad:</strong> El ejercicio de derechos ARCO es gratuito; solo se podrán cobrar gastos de reproducción o envío si aplica.</p>
+          <p><strong>Recurso:</strong> Si considera que su solicitud no fue atendida correctamente, puede interponer queja ante el INAI (<a href="https://www.inai.org.mx" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:underline">www.inai.org.mx</a>).</p>
+        </div>
+      </section>
+
+      <!-- 6. Revocación del consentimiento -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">6. Revocación del consentimiento</h2>
+        <p class="text-slate-700 leading-relaxed">
+          En cualquier momento puede revocar su consentimiento para el tratamiento de sus datos
+          enviando un correo a <a href="mailto:legal@rinarasoft.com" class="text-indigo-600 hover:underline">legal@rinarasoft.com</a>
+          con asunto "Revocación de consentimiento". Tenga en cuenta que la revocación no tiene
+          efectos retroactivos y que, si los datos son necesarios para cumplir una obligación legal
+          o contractual vigente, el tratamiento continuará únicamente para ese fin.
+        </p>
+      </section>
+
+      <!-- 7. Cookies -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">7. Uso de cookies y tecnologías similares</h2>
+        <p class="text-slate-700 leading-relaxed">
+          TimbrApp utiliza <strong>cookies de sesión</strong> estrictamente necesarias para
+          autenticar al usuario y mantener la sesión activa. No utilizamos cookies de seguimiento,
+          publicidad o terceros. Al usar la plataforma usted acepta el uso de estas cookies
+          técnicas indispensables. Puede configurar su navegador para rechazar cookies, aunque
+          esto impedirá el funcionamiento correcto de la aplicación.
+        </p>
+      </section>
+
+      <!-- 8. Seguridad -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">8. Medidas de seguridad</h2>
+        <p class="text-slate-700 leading-relaxed">
+          Implementamos medidas técnicas, administrativas y físicas para proteger sus datos,
+          incluyendo: cifrado TLS en tránsito, cifrado en reposo para credenciales fiscales (CSD),
+          control de acceso basado en roles, auditoría de operaciones y monitoreo de seguridad.
+          No obstante, ningún sistema es infalible; en caso de una brecha de seguridad que afecte
+          sus derechos, le notificaremos conforme al artículo 20 de la LFPDPPP.
+        </p>
+      </section>
+
+      <!-- 9. Conservación -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">9. Conservación de datos</h2>
+        <p class="text-slate-700 leading-relaxed">
+          Los datos de cuenta se conservan mientras la relación contractual esté activa y hasta
+          <strong>5 años</strong> después de su terminación, en cumplimiento del artículo 30 del
+          Código Fiscal de la Federación (CFF) relativo a la conservación de documentación contable
+          y comprobantes fiscales. Los CFDI timbrados se conservan el tiempo exigido por
+          la legislación fiscal aplicable.
+        </p>
+      </section>
+
+      <!-- 10. Cambios al aviso -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">10. Cambios al Aviso de Privacidad</h2>
+        <p class="text-slate-700 leading-relaxed">
+          Rinarasoft se reserva el derecho de modificar el presente Aviso de Privacidad. Cualquier
+          cambio se notificará mediante un aviso visible en la plataforma y/o por correo electrónico
+          a la dirección registrada, con al menos <strong>10 días hábiles</strong> de anticipación.
+          El uso continuado del servicio después de dicha notificación constituye la aceptación
+          de los cambios.
+        </p>
+      </section>
+
+      <!-- 11. Ley aplicable -->
+      <section class="space-y-3">
+        <h2 class="text-xl font-semibold text-slate-800">11. Ley aplicable y jurisdicción</h2>
+        <p class="text-slate-700 leading-relaxed">
+          El presente Aviso se rige por la Ley Federal de Protección de Datos Personales en
+          Posesión de los Particulares, su Reglamento y los Lineamientos del Aviso de Privacidad
+          publicados en el DOF, todos vigentes en los <strong>Estados Unidos Mexicanos</strong>.
+          Para cualquier controversia serán competentes los tribunales de la Ciudad de México,
+          renunciando las partes a cualquier otro fuero que pudiera corresponderles.
+        </p>
+      </section>
+
+      <!-- Footer del documento -->
+      <div class="border-t border-slate-100 pt-6 text-sm text-slate-500 space-y-1">
+        <p>Fecha de última actualización: 26 de mayo de 2026</p>
+        <p>Responsable: Rinarasoft — <a href="mailto:legal@rinarasoft.com" class="text-indigo-600 hover:underline">legal@rinarasoft.com</a></p>
+        <p class="italic text-xs mt-2">
+          Este aviso cumple con los requisitos mínimos establecidos en el artículo 16 de la LFPDPPP
+          y los Lineamientos del Aviso de Privacidad (DOF 17-01-2013).
+        </p>
+      </div>
+
+    </div>
+
+    <p class="text-center text-xs text-slate-400 mt-8">
+      TimbrApp &mdash; Rinarasoft © {{ currentYear }}
+      &nbsp;·&nbsp;
+      <a routerLink="/terminos" class="text-indigo-500 hover:underline">Términos y Condiciones</a>
+    </p>
+
+  </main>
+</div>

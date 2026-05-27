@@ -11,6 +11,18 @@ export const routes: Routes = [
       import('./components/login/login.component').then(m => m.LoginComponent),
   },
 
+  // Páginas legales públicas — sin shell
+  {
+    path: 'privacidad',
+    loadComponent: () =>
+      import('./components/privacidad/privacidad.component').then(m => m.PrivacidadComponent),
+  },
+  {
+    path: 'terminos',
+    loadComponent: () =>
+      import('./components/terminos/terminos.component').then(m => m.TerminosComponent),
+  },
+
   // Área autenticada — shell con sidebar como layout padre
   {
     path: '',

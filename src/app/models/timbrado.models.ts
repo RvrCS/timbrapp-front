@@ -40,9 +40,13 @@ export interface TimbradoDto {
   serie:          string | null;
   folio:          string | null;
   total:          number;
-  tipoComprobante: string | null;
-  formaPago:      string | null;
-  metodoPago:     string | null;
+  tipoComprobante:    string | null;
+  formaPago:          string | null;
+  metodoPago:         string | null;
+  /** "Vigente" | "Cancelado" | "EnProceso" | "Error" */
+  estado:             string | null;
+  motivoCancelacion:  string | null;
+  fechaCancelacion:   string | null; // ISO-8601 UTC
   /** Base64-encoded XML (CFDI timbrado) */
   xmlBase64:      string | null;
   /** Base64-encoded PDF */

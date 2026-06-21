@@ -49,6 +49,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./components/timbrados/timbrados.component').then(m => m.TimbradosComponent),
       },
+      {
+        path: 'cambiar-password',
+        loadComponent: () =>
+          import('./components/cambiar-password/cambiar-password.component').then(m => m.CambiarPasswordComponent),
+      },
       { path: '', redirectTo: 'subir', pathMatch: 'full' },
     ],
   },

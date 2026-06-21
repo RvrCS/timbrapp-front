@@ -19,17 +19,19 @@ import {
   ChevronDown,
   Settings,
   UserRound,
+  KeyRound,
 } from 'lucide-angular';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './interceptors/auth.interceptor';
+import { errorInterceptor } from './interceptors/error.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
     importProvidersFrom(
       LucideAngularModule.pick({
         Upload,
@@ -43,6 +45,7 @@ export const appConfig: ApplicationConfig = {
         ChevronDown,
         Settings,
         UserRound,
+        KeyRound,
       })
     ),
   ],

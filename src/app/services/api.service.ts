@@ -50,10 +50,10 @@ export class ApiService {
   }
 
   /** PUT raw file bytes directly to an external URL (e.g. S3 presigned). No auth header added.
-   *  `extraHeaders` are merged first; `Content-Type` always wins over any duplicate key. */
-  putS3(presignedUrl: string, file: File, extraHeaders: Record<string, string> = {}): Observable<string> {
+   *  `uploadHeaders` comes from the presign response and already includes Content-Type + any KMS headers. */
+  putS3(presignedUrl: string, file: File, uploadHeaders: Record<string, string> = {}): Observable<string> {
     return this.http.put(presignedUrl, file, {
-      headers: { ...extraHeaders, 'Content-Type': file.type },
+      headers: uploadHeaders,
       responseType: 'text',
     });
   }

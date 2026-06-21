@@ -87,10 +87,7 @@ export class UploadComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Cargar clientes si el cache está vacío
-    if (this.clienteService.clientes().length === 0) {
-      this.clienteService.list().subscribe();
-    }
+    this.clienteService.list().subscribe();
   }
 
   @HostListener('document:click')

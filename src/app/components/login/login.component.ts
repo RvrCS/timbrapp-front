@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../services/auth.service';
+import { ClienteService } from '../../services/cliente.service';
 
 @Component({
   selector: 'app-login',
@@ -11,8 +12,9 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
-  private readonly authService = inject(AuthService);
-  private readonly router      = inject(Router);
+  private readonly authService   = inject(AuthService);
+  private readonly router        = inject(Router);
+  private readonly clienteService = inject(ClienteService);
 
   email       = signal('');
   password    = signal('');
@@ -34,6 +36,8 @@ export class LoginComponent {
       .subscribe({
         next: () => {
           this.loading.set(false);
+          // Pre-warm clients cache so upload component shows them immediately.
+          this.clienteService.list().subscribe();
           this.router.navigate(['/subir']);
         },
         error: (err) => {

@@ -1,4 +1,4 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'https://qa-api.timbrapp.rinarasoft.com',
+  apiBaseUrl: 'https://timbrapp-api-qa.rinarasoft.com',
 };

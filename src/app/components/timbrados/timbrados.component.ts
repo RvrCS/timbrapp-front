@@ -40,14 +40,14 @@ export class TimbradosComponent implements OnInit {
     });
   }
 
-  loadTimbrados(): void {
+  loadTimbrados(force = false): void {
     this.loading.set(true);
     this.error.set(null);
 
     const anio = this.filterAnio() ? parseInt(this.filterAnio()) : undefined;
     const mes  = this.filterMes()  ? parseInt(this.filterMes())  : undefined;
 
-    this.timbradoService.list(anio, mes).subscribe({
+    this.timbradoService.list(anio, mes, force).subscribe({
       next: (list) => {
         this.timbrados.set(list);
         this.loading.set(false);
@@ -101,6 +101,26 @@ export class TimbradosComponent implements OnInit {
       case 'I': return 'bg-emerald-100 text-emerald-700';
       case 'E': return 'bg-red-100 text-red-700';
       default:  return 'bg-slate-100 text-slate-600';
+    }
+  }
+
+  estadoLabel(e: string | null): string {
+    switch (e) {
+      case 'Vigente':   return 'Vigente';
+      case 'Cancelado': return 'Cancelado';
+      case 'EnProceso': return 'En proceso';
+      case 'Error':     return 'Error';
+      default:          return e ?? '—';
+    }
+  }
+
+  estadoBadgeCls(e: string | null): string {
+    switch (e) {
+      case 'Vigente':   return 'bg-emerald-100 text-emerald-700';
+      case 'Cancelado': return 'bg-red-100 text-red-700';
+      case 'EnProceso': return 'bg-amber-100 text-amber-700';
+      case 'Error':     return 'bg-slate-100 text-slate-500';
+      default:          return 'bg-slate-100 text-slate-500';
     }
   }
 

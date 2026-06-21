@@ -46,3 +46,6 @@ Thumbs.db
 # User secrets / local settings
 .env
 *.env.local
+
+# Infrastructure docs (contain AWS account IDs, ARNs)
+/infra-docs/

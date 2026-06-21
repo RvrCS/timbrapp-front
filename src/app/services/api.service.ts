@@ -48,4 +48,13 @@ export class ApiService {
   delete<T>(path: string): Observable<T> {
     return this.http.delete<T>(this.url(path));
   }
+
+  /** PUT raw file bytes directly to an external URL (e.g. S3 presigned). No auth header added.
+   *  `uploadHeaders` comes from the presign response and already includes Content-Type + any KMS headers. */
+  putS3(presignedUrl: string, file: File, uploadHeaders: Record<string, string> = {}): Observable<string> {
+    return this.http.put(presignedUrl, file, {
+      headers: uploadHeaders,
+      responseType: 'text',
+    });
+  }
 }

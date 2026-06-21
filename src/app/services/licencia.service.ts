@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { ApiService } from './api.service';
+import { CachedResource } from '../utils/cached-resource';
 
 export interface SubirCsdResponse {
   numeroCertificado: string;
@@ -37,19 +38,33 @@ export interface LicenciaDto {
 export class LicenciaService {
   private readonly api = inject(ApiService);
 
-  getLicencia(): Observable<LicenciaDto> {
-    return this.api.get<LicenciaDto>('/api/licencia');
+  private readonly _licenciaCache  = new CachedResource<LicenciaDto>(10 * 60 * 1000);
+  private readonly _csdStatusCache = new CachedResource<FacturamaCsdStatus>(10 * 60 * 1000);
+
+  /** Datos de la licencia activa. `force = true` ignora TTL. */
+  getLicencia(force = false): Observable<LicenciaDto> {
+    return this._licenciaCache.load(() => this.api.get<LicenciaDto>('/api/licencia'), force);
   }
 
-  verificarCsdFacturama(): Observable<FacturamaCsdStatus> {
-    return this.api.get<FacturamaCsdStatus>('/api/licencia/csd/status');
+  /** Estado de sincronización del CSD con Facturama. `force = true` ignora TTL. */
+  verificarCsdFacturama(force = false): Observable<FacturamaCsdStatus> {
+    return this._csdStatusCache.load(
+      () => this.api.get<FacturamaCsdStatus>('/api/licencia/csd/status'),
+      force
+    );
   }
 
+  /** Sube .cer + .key + contraseña. Invalida ambos caches al completar. */
   subirCsd(cer: File, key: File, password: string): Observable<SubirCsdResponse> {
     const fd = new FormData();
     fd.append('certificado', cer);
     fd.append('llave', key);
     fd.append('password', password);
-    return this.api.postForm<SubirCsdResponse>('/api/licencia/csd', fd);
+    return this.api.postForm<SubirCsdResponse>('/api/licencia/csd', fd).pipe(
+      tap(() => {
+        this._licenciaCache.invalidate();
+        this._csdStatusCache.invalidate();
+      })
+    );
   }
 }

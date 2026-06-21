@@ -1,38 +1,57 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { ApiService } from './api.service';
 import { TimbrarRequest, TimbradoDto, TimbradoUsoDto } from '../models/timbrado.models';
+import { CachedResource, KeyedCachedResource } from '../utils/cached-resource';
 
 /**
  * Wraps the TimbradoController endpoints:
  *   POST /api/timbrado          → stamp a CFDI via Facturama
  *   GET  /api/timbrado          → list with optional ?anio=&mes= filters
  *   GET  /api/timbrado/{id}     → single timbrado detail
+ *   GET  /api/timbrado/uso      → monthly usage counters
  *
- * Auth headers are added automatically by AuthInterceptor.
+ * Lists are cached per filter combination (TTL 3 min).
+ * After timbrar(), all list buckets + uso cache are invalidated so the next
+ * fetch reflects the new timbrado.
  */
 @Injectable({ providedIn: 'root' })
 export class TimbradoService {
   private readonly api = inject(ApiService);
 
+  private readonly _listCache = new KeyedCachedResource<TimbradoDto[]>(3 * 60 * 1000);
+  private readonly _usoCache  = new CachedResource<TimbradoUsoDto>(3 * 60 * 1000);
+
   timbrar(request: TimbrarRequest): Observable<TimbradoDto> {
-    return this.api.post<TimbradoDto>('/api/timbrado', request);
+    return this.api.post<TimbradoDto>('/api/timbrado', request).pipe(
+      tap(() => {
+        // A new timbrado affects every filter bucket and the uso counter.
+        this._listCache.invalidateAll();
+        this._usoCache.invalidate();
+      })
+    );
   }
 
-  list(anio?: number, mes?: number): Observable<TimbradoDto[]> {
+  /**
+   * Returns the timbrado list for the given filters.
+   * Returns cache if fresh (TTL 3 min); set `force = true` to bypass.
+   */
+  list(anio?: number, mes?: number, force = false): Observable<TimbradoDto[]> {
+    const key = `${anio ?? ''}|${mes ?? ''}`;
     const params: string[] = [];
     if (anio !== undefined) params.push(`anio=${anio}`);
     if (mes  !== undefined) params.push(`mes=${mes}`);
     const qs = params.length ? `?${params.join('&')}` : '';
-    return this.api.get<TimbradoDto[]>(`/api/timbrado${qs}`);
+    return this._listCache.load(key, () => this.api.get<TimbradoDto[]>(`/api/timbrado${qs}`), force);
   }
 
   getById(id: string): Observable<TimbradoDto> {
     return this.api.get<TimbradoDto>(`/api/timbrado/${id}`);
   }
 
-  getUso(): Observable<TimbradoUsoDto> {
-    return this.api.get<TimbradoUsoDto>('/api/timbrado/uso');
+  /** Monthly usage counters. Returns cache if fresh (TTL 3 min). */
+  getUso(force = false): Observable<TimbradoUsoDto> {
+    return this._usoCache.load(() => this.api.get<TimbradoUsoDto>('/api/timbrado/uso'), force);
   }
 
   // ── Download helpers ────────────────────────────────────────────────────────

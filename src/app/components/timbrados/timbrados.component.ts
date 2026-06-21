@@ -40,14 +40,14 @@ export class TimbradosComponent implements OnInit {
     });
   }
 
-  loadTimbrados(): void {
+  loadTimbrados(force = false): void {
     this.loading.set(true);
     this.error.set(null);
 
     const anio = this.filterAnio() ? parseInt(this.filterAnio()) : undefined;
     const mes  = this.filterMes()  ? parseInt(this.filterMes())  : undefined;
 
-    this.timbradoService.list(anio, mes).subscribe({
+    this.timbradoService.list(anio, mes, force).subscribe({
       next: (list) => {
         this.timbrados.set(list);
         this.loading.set(false);

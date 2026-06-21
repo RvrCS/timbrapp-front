@@ -49,10 +49,11 @@ export class ApiService {
     return this.http.delete<T>(this.url(path));
   }
 
-  /** PUT raw file bytes directly to an external URL (e.g. S3 presigned). No auth header added. */
-  putS3(presignedUrl: string, file: File): Observable<string> {
+  /** PUT raw file bytes directly to an external URL (e.g. S3 presigned). No auth header added.
+   *  `extraHeaders` are merged first; `Content-Type` always wins over any duplicate key. */
+  putS3(presignedUrl: string, file: File, extraHeaders: Record<string, string> = {}): Observable<string> {
     return this.http.put(presignedUrl, file, {
-      headers: { 'Content-Type': file.type },
+      headers: { ...extraHeaders, 'Content-Type': file.type },
       responseType: 'text',
     });
   }

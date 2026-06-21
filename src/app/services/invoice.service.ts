@@ -10,6 +10,8 @@ interface PresignResponse {
   presignedUrl: string;
   s3Bucket: string;
   s3Key: string;
+  /** Additional headers required by S3 (e.g. KMS encryption). May be absent or {}. */
+  uploadHeaders?: Record<string, string>;
 }
 
 const POLL_INTERVAL_MS = 2_000;
@@ -21,7 +23,7 @@ export class InvoiceService {
   extractInvoice(file: File, isrRetencionTasa?: number, force = false): Observable<ExtractResult> {
     return this.api.post<PresignResponse>('/api/invoice/presign', { fileName: file.name }).pipe(
       switchMap((presign) =>
-        this.api.putS3(presign.presignedUrl, file).pipe(
+        this.api.putS3(presign.presignedUrl, file, presign.uploadHeaders ?? {}).pipe(
           switchMap(() =>
             this.api.post<JobStatusDto>('/api/invoice/extract', {
               s3Key: presign.s3Key,

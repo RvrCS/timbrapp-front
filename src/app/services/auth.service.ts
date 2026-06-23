@@ -1,5 +1,5 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, map, tap } from 'rxjs';
 import { ApiService } from './api.service';
 import {
   AuthUser,
@@ -43,6 +43,13 @@ export class AuthService {
     return this.api
       .post<LoginResponse>('/api/auth/register', request)
       .pipe(tap((res) => this.persist(res)));
+  }
+
+  /** Changes the password and replaces the stored JWT with the new one from the response. */
+  changePassword(currentPassword: string, newPassword: string): Observable<void> {
+    return this.api
+      .post<LoginResponse>('/api/auth/change-password', { currentPassword, newPassword })
+      .pipe(tap((res) => this.persist(res)), map(() => undefined));
   }
 
   logout(): void {

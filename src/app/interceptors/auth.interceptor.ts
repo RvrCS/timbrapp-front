@@ -15,8 +15,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = authService.token();
 
-  // Public auth endpoints or external URLs (e.g. S3 presigned) — skip
-  if (!token || req.url.includes('/api/auth/') || !req.url.startsWith(environment.apiBaseUrl)) {
+  // Public endpoints (no token needed) or external URLs (e.g. S3 presigned) — skip
+  const isPublicAuth = req.url.includes('/api/auth/login') || req.url.includes('/api/auth/register');
+  if (!token || isPublicAuth || !req.url.startsWith(environment.apiBaseUrl)) {
     return next(req);
   }
 

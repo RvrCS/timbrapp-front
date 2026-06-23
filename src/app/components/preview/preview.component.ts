@@ -1,11 +1,9 @@
-import { Component, effect, input, OnInit, signal, inject, computed } from '@angular/core';
+import { Component, effect, input, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ExtractResult, CfdiFields, Concepto } from '../../models/cfdi.models';
-import { Cliente, USOS_CFDI, ClienteForm } from '../../models/cliente.models';
+import { Cliente, USOS_CFDI } from '../../models/cliente.models';
 import { LicenciaDto, LicenciaService } from '../../services/licencia.service';
-import { ClienteService } from '../../services/cliente.service';
-import { formatHttpError } from '../../utils/http-error.utils';
 
 type IvaRate = '16' | '8' | '0';
 
@@ -26,7 +24,6 @@ const FORMAS_PAGO = [
 })
 export class PreviewComponent implements OnInit {
   private readonly licenciaService = inject(LicenciaService);
-  private readonly clienteService  = inject(ClienteService);
 
   result  = input.required<ExtractResult>();
   cliente = input<Cliente | null>(null);
@@ -36,18 +33,6 @@ export class PreviewComponent implements OnInit {
   ivaRate           = signal<IvaRate>('16');
   isrRatePct        = signal<string>('');
   usoCfdiOverride   = signal<string>('G01');
-
-  // ── Receptor banner (XML CFDI only) ────────────────────────────────────────
-  receptorBannerDismissed = signal(false);
-  receptorGuardado        = signal(false);
-  receptorSaving          = signal(false);
-  receptorError           = signal<string | null>(null);
-
-  showReceptorBanner = computed(() => {
-    if (this.receptorBannerDismissed() || this.receptorGuardado()) return false;
-    const r = this.result();
-    return !r.cfdiFields?.receptorMatchId && !!r.cfdiFields?.rfcReceptor;
-  });
 
   draft: CfdiFields | null = null;
 
@@ -190,36 +175,6 @@ export class PreviewComponent implements OnInit {
   getCurrentFields(): CfdiFields | null {
     if (!this.draft) return null;
     return { ...this.draft, usoCfdi: this.usoCfdiOverride() };
-  }
-
-  // ── Receptor banner actions ───────────────────────────────────────────────
-
-  dismissReceptorBanner(): void { this.receptorBannerDismissed.set(true); }
-
-  guardarReceptor(): void {
-    const fields = this.result().cfdiFields;
-    if (!fields?.rfcReceptor) return;
-
-    const form: ClienteForm = {
-      rfc:             fields.rfcReceptor,
-      nombre:          fields.nombreReceptor ?? fields.rfcReceptor,
-      domicilioFiscal: fields.domicilioFiscalReceptor ?? '',
-      regimenFiscal:   fields.regimenFiscalReceptor ?? '616',
-      usoCfdiDefault:  fields.usoCfdi ?? 'G01',
-      email:           '',
-      telefono:        '',
-    };
-
-    this.receptorSaving.set(true);
-    this.receptorError.set(null);
-
-    this.clienteService.create(form).subscribe({
-      next:  () => { this.receptorGuardado.set(true); this.receptorSaving.set(false); },
-      error: (err) => {
-        this.receptorError.set(formatHttpError(err, 'Error al guardar el cliente.'));
-        this.receptorSaving.set(false);
-      },
-    });
   }
 
   // ── Display helpers ───────────────────────────────────────────────────────

@@ -29,6 +29,126 @@
       No tienes clientes registrados. <a routerLink="/clientes" class="underline font-medium">Agregar uno</a>.
     </div>
   } @else {
+    @if (unmatchedReceptor() && !selectedCliente()) {
+      <!-- ── Inline add-client card ───────────────────────────────────────── -->
+      <div class="border border-indigo-200 rounded-xl bg-indigo-50 p-4 flex flex-col gap-3 mb-2" (click)="$event.stopPropagation()">
+
+        <!-- Header -->
+        <div class="flex items-start gap-2">
+          <svg class="w-4 h-4 shrink-0 mt-0.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div>
+            <p class="text-sm font-semibold text-indigo-800">Receptor detectado — no está en tu catálogo</p>
+            <p class="text-xs text-indigo-600 mt-0.5">
+              <span class="font-mono font-bold">{{ unmatchedReceptor()!.rfc }}</span>
+              @if (unmatchedReceptor()!.nombre) {
+                <span class="ml-1">· {{ unmatchedReceptor()!.nombre }}</span>
+              }
+            </p>
+          </div>
+        </div>
+
+        <!-- Inline form -->
+        @if (pendingForm()) {
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+
+            <!-- RFC -->
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-slate-600">RFC <span class="text-red-500">*</span></label>
+              <input type="text" maxlength="13"
+                     [value]="pendingForm()!.rfc"
+                     (input)="updatePendingField('rfc', $any($event.target).value)"
+                     (click)="$event.stopPropagation()"
+                     class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white text-slate-700 font-mono uppercase" />
+            </div>
+
+            <!-- Nombre -->
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-slate-600">Nombre / Razón Social <span class="text-red-500">*</span></label>
+              <input type="text"
+                     [value]="pendingForm()!.nombre"
+                     (input)="updatePendingField('nombre', $any($event.target).value)"
+                     (click)="$event.stopPropagation()"
+                     class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white text-slate-700" />
+            </div>
+
+            <!-- CP -->
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-slate-600">Código Postal <span class="text-red-500">*</span></label>
+              <input type="text" maxlength="5"
+                     [value]="pendingForm()!.domicilioFiscal"
+                     (input)="updatePendingField('domicilioFiscal', $any($event.target).value)"
+                     (click)="$event.stopPropagation()"
+                     class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white text-slate-700 font-mono" />
+            </div>
+
+            <!-- Régimen Fiscal -->
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-slate-600">Régimen Fiscal <span class="text-red-500">*</span></label>
+              <select [value]="pendingForm()!.regimenFiscal"
+                      (change)="updatePendingField('regimenFiscal', $any($event.target).value)"
+                      (click)="$event.stopPropagation()"
+                      class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white text-slate-700">
+                <option value="">Selecciona...</option>
+                @for (r of regimenes; track r.clave) {
+                  <option [value]="r.clave">{{ r.descripcion }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Uso CFDI -->
+            <div class="flex flex-col gap-1 sm:col-span-2">
+              <label class="text-xs font-medium text-slate-600">Uso CFDI por defecto <span class="text-red-500">*</span></label>
+              <select [value]="pendingForm()!.usoCfdi"
+                      (change)="updatePendingField('usoCfdi', $any($event.target).value)"
+                      (click)="$event.stopPropagation()"
+                      class="px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white text-slate-700">
+                <option value="">Selecciona...</option>
+                @for (u of usosCfdi; track u.clave) {
+                  <option [value]="u.clave">{{ u.descripcion }}</option>
+                }
+              </select>
+            </div>
+
+          </div>
+
+          <!-- Error -->
+          @if (addClienteError()) {
+            <p class="text-xs text-red-600">{{ addClienteError() }}</p>
+          }
+
+          <!-- Actions -->
+          <div class="flex items-center gap-3 pt-1">
+            <button type="button"
+                    (click)="confirmAddCliente(); $event.stopPropagation()"
+                    [disabled]="!canAddCliente() || addingCliente()"
+                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-indigo-600
+                           hover:bg-indigo-700 rounded-xl transition-colors
+                           disabled:opacity-40 disabled:cursor-not-allowed">
+              @if (addingCliente()) {
+                <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                Guardando...
+              } @else {
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Añadir cliente
+              }
+            </button>
+            <button type="button"
+                    (click)="dismissAddCliente(); $event.stopPropagation()"
+                    class="text-sm text-slate-500 hover:text-slate-700 underline underline-offset-2 transition-colors">
+              Seleccionar manualmente
+            </button>
+          </div>
+        }
+      </div>
+    }
     <div class="relative" (click)="$event.stopPropagation()">
 
       <!-- Trigger -->
@@ -77,7 +197,11 @@
           <!-- Options list -->
           <ul class="max-h-52 overflow-y-auto">
             @if (filteredClientes().length === 0) {
-              <li class="px-4 py-3 text-sm text-slate-400 text-center">Sin resultados</li>
+              <li class="px-4 py-3 text-sm text-slate-400 text-center flex flex-col items-center gap-1">
+                <span>Sin resultados</span>
+                <a routerLink="/clientes" (click)="dropdownOpen.set(false)"
+                   class="text-indigo-600 hover:underline text-xs font-medium">+ Agregar nuevo cliente</a>
+              </li>
             }
             @for (c of filteredClientes(); track c.id) {
               <li>
@@ -112,22 +236,6 @@
   }
 </div>
 
-<!-- ISR retention config -->
-<div class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-3 px-1" (click)="$event.stopPropagation()">
-  <label for="isrTasa" class="text-sm font-medium text-slate-600 whitespace-nowrap">Retención ISR (%)</label>
-  <input
-    id="isrTasa"
-    type="number"
-    min="0"
-    max="100"
-    step="0.01"
-    placeholder="Ej. 1.25 (opcional)"
-    class="w-full sm:w-44 px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-slate-700 bg-white"
-    [value]="isrTasaPct()"
-    (input)="onIsrInput($event)"
-  />
-  <span class="text-xs text-slate-400">Dejar vacío si no aplica retención</span>
-</div>
 
 <div
   class="w-full rounded-2xl border-2 border-dashed transition-all duration-200 flex flex-col items-center justify-center gap-4 cursor-pointer select-none min-h-[240px] p-8"

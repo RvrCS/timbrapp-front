@@ -267,7 +267,16 @@ export class SubirComponent {
     this.timbradoError.set(null);
 
     if (r.cfdiFields?.receptorMatchId) {
+      this.uploadRef?.setUnmatchedReceptor(null, null, null, null, null);
       this.uploadRef?.autoSelectById(r.cfdiFields.receptorMatchId);
+    } else {
+      this.uploadRef?.setUnmatchedReceptor(
+        r.cfdiFields?.rfcReceptor ?? null,
+        r.cfdiFields?.nombreReceptor ?? null,
+        r.cfdiFields?.domicilioFiscalReceptor ?? null,
+        r.cfdiFields?.regimenFiscalReceptor ?? null,
+        r.cfdiFields?.usoCfdi ?? null,
+      );
     }
   }
 

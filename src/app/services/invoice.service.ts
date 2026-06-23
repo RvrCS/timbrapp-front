@@ -20,7 +20,7 @@ const POLL_INTERVAL_MS = 2_000;
 export class InvoiceService {
   private readonly api = inject(ApiService);
 
-  extractInvoice(file: File, isrRetencionTasa?: number, force = false): Observable<ExtractResult> {
+  extractInvoice(file: File, force = false): Observable<ExtractResult> {
     return this.api.post<PresignResponse>('/api/invoice/presign', { fileName: file.name }).pipe(
       switchMap((presign) =>
         this.api.putS3(presign.presignedUrl, file, presign.uploadHeaders ?? {}).pipe(
@@ -29,7 +29,6 @@ export class InvoiceService {
               s3Key: presign.s3Key,
               s3Bucket: presign.s3Bucket,
               fileName: file.name,
-              isrRetencionTasa: isrRetencionTasa ?? 0,
               force,
             })
           )

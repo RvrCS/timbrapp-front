@@ -15,10 +15,26 @@ import { RouterLink } from '@angular/router';
 import { InvoiceService } from '../../services/invoice.service';
 import { ClienteService } from '../../services/cliente.service';
 import { ExtractResult } from '../../models/cfdi.models';
-import { Cliente } from '../../models/cliente.models';
+import { Cliente, ClienteForm, REGIMENES_FISCALES, USOS_CFDI } from '../../models/cliente.models';
 import { formatHttpError } from '../../utils/http-error.utils';
 
 type UploadState = 'idle' | 'dragging' | 'uploading' | 'done' | 'error';
+
+type PendingForm = {
+  rfc: string;
+  nombre: string;
+  domicilioFiscal: string;
+  regimenFiscal: string;
+  usoCfdi: string;
+};
+
+type UnmatchedReceptor = {
+  rfc: string;
+  nombre: string | null;
+  domicilioFiscal: string | null;
+  regimenFiscal: string | null;
+  usoCfdi: string | null;
+};
 
 const MAX_FILE_SIZE_MB = 20;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -35,15 +51,21 @@ export class UploadComponent implements OnInit {
   private readonly invoiceService = inject(InvoiceService);
   readonly clienteService         = inject(ClienteService);
 
-  state      = signal<UploadState>('idle');
-  errorMsg   = signal<string | null>(null);
-  fileName   = signal<string | null>(null);
-  isrTasaPct = signal<string>('');
+  readonly regimenes = REGIMENES_FISCALES;
+  readonly usosCfdi  = USOS_CFDI;
 
-  selectedCliente    = signal<Cliente | null>(null);
-  dropdownOpen       = signal(false);
-  clienteSearch      = signal('');
-  private pendingId  = signal<string | null>(null);
+  state    = signal<UploadState>('idle');
+  errorMsg = signal<string | null>(null);
+  fileName = signal<string | null>(null);
+
+  selectedCliente   = signal<Cliente | null>(null);
+  dropdownOpen      = signal(false);
+  clienteSearch     = signal('');
+  unmatchedReceptor = signal<UnmatchedReceptor | null>(null);
+  pendingForm       = signal<PendingForm | null>(null);
+  addingCliente     = signal(false);
+  addClienteError   = signal<string | null>(null);
+  private pendingId = signal<string | null>(null);
 
   isIdle      = computed(() => this.state() === 'idle');
   isDragging  = computed(() => this.state() === 'dragging');
@@ -51,8 +73,14 @@ export class UploadComponent implements OnInit {
   isDone      = computed(() => this.state() === 'done');
   isError     = computed(() => this.state() === 'error');
 
-  clientes          = computed(() => this.clienteService.clientes());
-  filteredClientes  = computed(() => {
+  canAddCliente = computed(() => {
+    const f = this.pendingForm();
+    if (!f) return false;
+    return !!(f.rfc.trim() && f.nombre.trim() && f.domicilioFiscal.trim() && f.regimenFiscal.trim() && f.usoCfdi.trim());
+  });
+
+  clientes         = computed(() => this.clienteService.clientes());
+  filteredClientes = computed(() => {
     const tokens = this.clienteSearch().toLowerCase().trim().split(/\s+/).filter(Boolean);
     if (!tokens.length) return this.clientes();
     return this.clientes().filter(c => {
@@ -61,7 +89,7 @@ export class UploadComponent implements OnInit {
     });
   });
 
-  extracted  = output<ExtractResult>();
+  extracted = output<ExtractResult>();
 
   constructor() {
     // When clientes load after extraction, apply any pending auto-selection
@@ -71,6 +99,8 @@ export class UploadComponent implements OnInit {
       const found = this.clientes().find(c => c.id === id);
       if (found) {
         this.selectedCliente.set(found);
+        this.unmatchedReceptor.set(null);
+        this.pendingForm.set(null);
         this.pendingId.set(null);
       }
     });
@@ -81,9 +111,86 @@ export class UploadComponent implements OnInit {
     const found = this.clientes().find(c => c.id === receptorMatchId);
     if (found) {
       this.selectedCliente.set(found);
+      this.unmatchedReceptor.set(null);
+      this.pendingForm.set(null);
     } else {
       this.pendingId.set(receptorMatchId);
     }
+  }
+
+  /**
+   * Called by SubirComponent after extraction.
+   * Pass all 5 receptor fields (null or empty string = not detected).
+   * Treats empty string same as null.
+   */
+  setUnmatchedReceptor(
+    rfc: string | null,
+    nombre: string | null,
+    domicilioFiscal: string | null,
+    regimenFiscal: string | null,
+    usoCfdi: string | null,
+  ): void {
+    const n = (v: string | null | undefined): string | null => (v?.trim() || null);
+    const normRfc = n(rfc);
+    if (!normRfc) {
+      this.unmatchedReceptor.set(null);
+      this.pendingForm.set(null);
+      return;
+    }
+    this.unmatchedReceptor.set({
+      rfc: normRfc,
+      nombre: n(nombre),
+      domicilioFiscal: n(domicilioFiscal),
+      regimenFiscal: n(regimenFiscal),
+      usoCfdi: n(usoCfdi),
+    });
+    this.pendingForm.set({
+      rfc: normRfc,
+      nombre: n(nombre) ?? '',
+      domicilioFiscal: n(domicilioFiscal) ?? '',
+      regimenFiscal: n(regimenFiscal) ?? '',
+      usoCfdi: n(usoCfdi) ?? '',
+    });
+    this.addClienteError.set(null);
+  }
+
+  updatePendingField(field: keyof PendingForm, value: string): void {
+    this.pendingForm.update(f => f ? { ...f, [field]: value } : null);
+  }
+
+  confirmAddCliente(): void {
+    const f = this.pendingForm();
+    if (!f || this.addingCliente()) return;
+    this.addingCliente.set(true);
+    this.addClienteError.set(null);
+    const form: ClienteForm = {
+      rfc: f.rfc.trim(),
+      nombre: f.nombre.trim(),
+      domicilioFiscal: f.domicilioFiscal.trim(),
+      regimenFiscal: f.regimenFiscal.trim(),
+      usoCfdiDefault: f.usoCfdi.trim(),
+      email: '',
+      telefono: '',
+    };
+    this.clienteService.create(form).subscribe({
+      next: (c) => {
+        this.addingCliente.set(false);
+        this.selectedCliente.set(c);
+        this.unmatchedReceptor.set(null);
+        this.pendingForm.set(null);
+        this.addClienteError.set(null);
+      },
+      error: (err) => {
+        this.addingCliente.set(false);
+        this.addClienteError.set(formatHttpError(err, 'Error al crear el cliente.'));
+      },
+    });
+  }
+
+  dismissAddCliente(): void {
+    this.unmatchedReceptor.set(null);
+    this.pendingForm.set(null);
+    this.addClienteError.set(null);
   }
 
   ngOnInit(): void {
@@ -143,14 +250,14 @@ export class UploadComponent implements OnInit {
     this.fileInputRef.nativeElement.click();
   }
 
-  onIsrInput(event: Event): void {
-    this.isrTasaPct.set((event.target as HTMLInputElement).value);
-  }
-
   retry(): void {
     this.state.set('idle');
     this.errorMsg.set(null);
     this.fileName.set(null);
+    this.unmatchedReceptor.set(null);
+    this.pendingForm.set(null);
+    this.addClienteError.set(null);
+    this.selectedCliente.set(null);
   }
 
   private readonly ACCEPTED_EXTENSIONS = [
@@ -179,9 +286,7 @@ export class UploadComponent implements OnInit {
     this.state.set('uploading');
     this.errorMsg.set(null);
 
-    const pct = parseFloat(this.isrTasaPct());
-    const isrRate = !isNaN(pct) && pct > 0 ? pct / 100 : undefined;
-    this.invoiceService.extractInvoice(file, isrRate).subscribe({
+    this.invoiceService.extractInvoice(file).subscribe({
       next: (result) => { this.state.set('done'); this.extracted.emit(result); },
       error: (err) => {
         this.state.set('error');

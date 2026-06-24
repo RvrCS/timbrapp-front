@@ -168,6 +168,19 @@ export class PreviewComponent implements OnInit {
       : 0;
     this.draft.totalImpuestosRetenidos = isr > 0 ? isr.toFixed(2) : null;
 
+    // Populate the structured ISR entry that the backend reads at timbrado time.
+    // CfdiBuilderService reads isrRate from impuestosRetenidos[impuesto=="001"].tasaOCuota;
+    // without this, ISR is silently dropped from the stamped CFDI total.
+    this.draft.impuestosRetenidos = isr > 0
+      ? [{
+          base:       subtotal.toFixed(2),
+          impuesto:   '001',
+          tipoFactor: 'Tasa',
+          tasaOCuota: (isrPct / 100).toFixed(6),
+          importe:    isr.toFixed(2),
+        }]
+      : (this.draft.impuestosRetenidos ?? []).filter(r => r.impuesto !== '001');
+
     this.draft.total = (subtotal + iva - isr).toFixed(2);
   }
 

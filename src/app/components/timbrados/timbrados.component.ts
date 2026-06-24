@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TimbradoService } from '../../services/timbrado.service';
@@ -21,6 +21,22 @@ export class TimbradosComponent implements OnInit {
 
   filterAnio  = signal<string>('');
   filterMes   = signal<string>('');
+
+  // ── Cancelación ────────────────────────────────────────────────────────────
+  cancelTarget   = signal<TimbradoDto | null>(null);
+  cancelMotivo   = signal<string>('01');
+  cancelling     = signal(false);
+  cancelError    = signal<string | null>(null);
+
+  // ── Sync estado SAT ────────────────────────────────────────────────────────
+  syncingId      = signal<string | null>(null);
+
+  readonly motivosCancelacion = [
+    { clave: '01', desc: '01 — Comprobante con errores sin relación' },
+    { clave: '02', desc: '02 — Comprobante con errores con relación' },
+    { clave: '03', desc: '03 — No se llevó a cabo la operación' },
+    { clave: '04', desc: '04 — Operación nominativa (factura global)' },
+  ];
 
   readonly years  = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
   readonly months = [
@@ -67,6 +83,54 @@ export class TimbradosComponent implements OnInit {
 
   downloadXml(t: TimbradoDto): void { this.timbradoService.downloadXml(t); }
   downloadPdf(t: TimbradoDto): void { this.timbradoService.downloadPdf(t); }
+
+  openCancelModal(t: TimbradoDto): void {
+    this.cancelTarget.set(t);
+    this.cancelMotivo.set('01');
+    this.cancelError.set(null);
+  }
+
+  closeCancelModal(): void {
+    if (this.cancelling()) return;
+    this.cancelTarget.set(null);
+    this.cancelError.set(null);
+  }
+
+  onCancelMotivoChange(e: Event): void {
+    this.cancelMotivo.set((e.target as HTMLSelectElement).value);
+  }
+
+  confirmarCancelacion(): void {
+    const t = this.cancelTarget();
+    if (!t || this.cancelling()) return;
+    this.cancelling.set(true);
+    this.cancelError.set(null);
+
+    this.timbradoService.cancelar(t.id, this.cancelMotivo()).subscribe({
+      next: (updated) => {
+        this.timbrados.update(list => list.map(x => x.id === updated.id ? updated : x));
+        this.cancelling.set(false);
+        this.cancelTarget.set(null);
+      },
+      error: (err) => {
+        this.cancelError.set(formatHttpError(err, 'Error al cancelar el timbrado.'));
+        this.cancelling.set(false);
+      },
+    });
+  }
+
+  syncEstado(t: TimbradoDto): void {
+    if (this.syncingId()) return;
+    this.syncingId.set(t.id);
+
+    this.timbradoService.syncEstado(t.id).subscribe({
+      next: (updated) => {
+        this.timbrados.update(list => list.map(x => x.id === updated.id ? updated : x));
+        this.syncingId.set(null);
+      },
+      error: () => this.syncingId.set(null),
+    });
+  }
 
   // ── Display helpers ────────────────────────────────────────────────────────
 

@@ -54,6 +54,18 @@ export class TimbradoService {
     return this._usoCache.load(() => this.api.get<TimbradoUsoDto>('/api/timbrado/uso'), force);
   }
 
+  cancelar(id: string, motivo: string): Observable<TimbradoDto> {
+    return this.api.post<TimbradoDto>(`/api/timbrado/${id}/cancelar`, { motivo }).pipe(
+      tap(() => this._listCache.invalidateAll())
+    );
+  }
+
+  syncEstado(id: string): Observable<TimbradoDto> {
+    return this.api.post<TimbradoDto>(`/api/timbrado/${id}/sync-estado`, {}).pipe(
+      tap(() => this._listCache.invalidateAll())
+    );
+  }
+
   // ── Download helpers ────────────────────────────────────────────────────────
 
   /** Opens the XML as a download from a base64 string */

@@ -59,7 +59,10 @@ export class PreviewComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.licenciaService.getLicencia().subscribe(l => this.licencia.set(l));
+    this.licenciaService.getLicencia().subscribe(l => {
+      this.licencia.set(l)
+      this.draft!.lugarExpedicion = this.licencia()!.domicilioFiscal
+    });
   }
 
   private initRatesFromFields(fields: CfdiFields): void {
@@ -161,6 +164,18 @@ export class PreviewComponent implements OnInit {
     const ivaMul = ({ '16': 0.16, '8': 0.08, '0': 0 } as Record<IvaRate, number>)[this.ivaRate()];
     const iva    = parseFloat((subtotal * ivaMul).toFixed(2));
     this.draft.totalImpuestosTrasladados = ivaMul > 0 ? iva.toFixed(2) : null;
+
+    // Populate the structured IVA entry so the backend reads the correct rate at timbrado time.
+    // (Mirrors the same pattern used for impuestosRetenidos / ISR.)
+    this.draft.impuestosTrasladados = ivaMul > 0
+      ? [{
+          base:       subtotal.toFixed(2),
+          impuesto:   '002',
+          tipoFactor: 'Tasa',
+          tasaOCuota: ivaMul.toFixed(6),
+          importe:    iva.toFixed(2),
+        }]
+      : [];
 
     const isrPct = parseFloat(this.isrRatePct());
     const isr    = !isNaN(isrPct) && isrPct > 0

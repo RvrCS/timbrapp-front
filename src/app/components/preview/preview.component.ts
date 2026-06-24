@@ -59,7 +59,10 @@ export class PreviewComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.licenciaService.getLicencia().subscribe(l => this.licencia.set(l));
+    this.licenciaService.getLicencia().subscribe(l => {
+      this.licencia.set(l)
+      this.draft!.lugarExpedicion = this.licencia()!.domicilioFiscal
+    });
   }
 
   private initRatesFromFields(fields: CfdiFields): void {
@@ -162,11 +165,36 @@ export class PreviewComponent implements OnInit {
     const iva    = parseFloat((subtotal * ivaMul).toFixed(2));
     this.draft.totalImpuestosTrasladados = ivaMul > 0 ? iva.toFixed(2) : null;
 
+    // Populate the structured IVA entry so the backend reads the correct rate at timbrado time.
+    // (Mirrors the same pattern used for impuestosRetenidos / ISR.)
+    this.draft.impuestosTrasladados = ivaMul > 0
+      ? [{
+          base:       subtotal.toFixed(2),
+          impuesto:   '002',
+          tipoFactor: 'Tasa',
+          tasaOCuota: ivaMul.toFixed(6),
+          importe:    iva.toFixed(2),
+        }]
+      : [];
+
     const isrPct = parseFloat(this.isrRatePct());
     const isr    = !isNaN(isrPct) && isrPct > 0
       ? parseFloat((subtotal * isrPct / 100).toFixed(2))
       : 0;
     this.draft.totalImpuestosRetenidos = isr > 0 ? isr.toFixed(2) : null;
+
+    // Populate the structured ISR entry that the backend reads at timbrado time.
+    // CfdiBuilderService reads isrRate from impuestosRetenidos[impuesto=="001"].tasaOCuota;
+    // without this, ISR is silently dropped from the stamped CFDI total.
+    this.draft.impuestosRetenidos = isr > 0
+      ? [{
+          base:       subtotal.toFixed(2),
+          impuesto:   '001',
+          tipoFactor: 'Tasa',
+          tasaOCuota: (isrPct / 100).toFixed(6),
+          importe:    isr.toFixed(2),
+        }]
+      : (this.draft.impuestosRetenidos ?? []).filter(r => r.impuesto !== '001');
 
     this.draft.total = (subtotal + iva - isr).toFixed(2);
   }

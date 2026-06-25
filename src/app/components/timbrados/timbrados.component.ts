@@ -32,8 +32,8 @@ export class TimbradosComponent implements OnInit {
   syncingId      = signal<string | null>(null);
 
   readonly motivosCancelacion = [
-    { clave: '01', desc: '01 — Comprobante con errores sin relación' },
-    { clave: '02', desc: '02 — Comprobante con errores con relación' },
+    { clave: '01', desc: '01 — Comprobante con errores con relación' },
+    { clave: '02', desc: '02 — Comprobante con errores sin relación' },
     { clave: '03', desc: '03 — No se llevó a cabo la operación' },
     { clave: '04', desc: '04 — Operación nominativa (factura global)' },
   ];

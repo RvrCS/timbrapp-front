@@ -20,6 +20,16 @@ import {
   Settings,
   UserRound,
   KeyRound,
+  BookOpen,
+  Download,
+  ArrowRight,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  CheckCircle2,
+  Truck,
+  UserCog,
+  HelpCircle,
+  ListChecks,
 } from 'lucide-angular';
 
 import { routes } from './app.routes';
@@ -46,6 +56,16 @@ export const appConfig: ApplicationConfig = {
         Settings,
         UserRound,
         KeyRound,
+        BookOpen,
+        Download,
+        ArrowRight,
+        ArrowUpCircle,
+        ArrowDownCircle,
+        CheckCircle2,
+        Truck,
+        UserCog,
+        HelpCircle,
+        ListChecks,
       })
     ),
   ],

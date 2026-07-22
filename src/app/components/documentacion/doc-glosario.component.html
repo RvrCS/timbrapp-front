@@ -1,0 +1,11 @@
+<h2 class="text-lg font-bold text-slate-900 mb-1">Glosario</h2>
+<p class="text-sm text-slate-500 mb-6 max-w-2xl">Los términos que vas a ver en TimbrApp, explicados en una línea.</p>
+
+<dl class="grid grid-cols-1 gap-0 max-w-2xl">
+  @for (t of terms; track t.term) {
+    <div class="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-x-6 gap-y-1 py-3 border-t border-slate-100">
+      <dt class="text-sm font-bold text-slate-800">{{ t.term }}</dt>
+      <dd class="text-sm text-slate-500">{{ t.def }}</dd>
+    </div>
+  }
+</dl>

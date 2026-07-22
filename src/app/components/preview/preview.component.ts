@@ -1,9 +1,34 @@
 import { Component, effect, input, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ExtractResult, CfdiFields, Concepto } from '../../models/cfdi.models';
+import { ExtractResult, CfdiFields, Concepto, DoctoRelacionadoPago } from '../../models/cfdi.models';
 import { Cliente, USOS_CFDI } from '../../models/cliente.models';
 import { LicenciaDto, LicenciaService } from '../../services/licencia.service';
+import { ConceptosTableComponent } from '../conceptos-table/conceptos-table.component';
+import { ConceptosEditModalComponent } from '../conceptos-edit-modal/conceptos-edit-modal.component';
+import { ColumnDef } from '../../models/table-column.models';
+
+/** Column set for tipoDeComprobante I/E — reused by ConceptosTableComponent. */
+const CONCEPTO_COLUMNS: ColumnDef[] = [
+  { key: 'descripcion', header: 'Descripción', type: 'text', sortable: true, searchable: true,
+    width: '220px', placeholder: 'Descripción', subKey: 'claveProdServ', subPlaceholder: 'Clave SAT' },
+  { key: 'cantidad', header: 'Cant.', type: 'number', sortable: true, align: 'center', width: '70px', step: 0.001 },
+  { key: 'unidad', header: 'Unidad', type: 'text', sortable: true, align: 'center', width: '90px',
+    placeholder: 'Unid.', subKey: 'claveUnidad', subPlaceholder: 'Clave' },
+  { key: 'valorUnitario', header: 'P. Unit.', type: 'currency', sortable: true, align: 'right', width: '100px' },
+  { key: 'importe', header: 'Importe', type: 'currency', sortable: true, align: 'right', width: '100px' },
+];
+
+/** Column set for tipoDeComprobante P — documentos relacionados del complemento de pago. */
+const DOCTO_PAGO_COLUMNS: ColumnDef[] = [
+  { key: 'uuid', header: 'UUID', type: 'text', sortable: true, searchable: true, width: '220px', placeholder: 'UUID del CFDI' },
+  { key: 'serie', header: 'Serie', type: 'text', sortable: true, searchable: true, width: '70px' },
+  { key: 'folio', header: 'Folio', type: 'text', sortable: true, searchable: true, width: '70px' },
+  { key: 'numParcialidad', header: 'Parcialidad', type: 'number', sortable: true, align: 'center', width: '90px' },
+  { key: 'impSaldoAnt', header: 'Saldo ant.', type: 'currency', sortable: true, align: 'right', width: '100px' },
+  { key: 'impPagado', header: 'Pagado', type: 'currency', sortable: true, align: 'right', width: '100px' },
+  { key: 'impSaldoInsoluto', header: 'Saldo insoluto', type: 'currency', sortable: true, align: 'right', width: '110px' },
+];
 
 type IvaRate = '16' | '8' | '0';
 
@@ -16,10 +41,20 @@ const FORMAS_PAGO = [
   { clave: '99', desc: 'Por definir' },
 ];
 
+const TIPOS_RELACION = [
+  { clave: '01', desc: 'Nota de crédito de los documentos relacionados' },
+  { clave: '02', desc: 'Nota de débito de los documentos relacionados' },
+  { clave: '03', desc: 'Devolución de mercancía sobre facturas o traslados previos' },
+  { clave: '04', desc: 'Sustitución de los CFDI previos' },
+  { clave: '05', desc: 'Traslados de mercancías facturados previamente' },
+  { clave: '06', desc: 'Factura generada por los traslados previos' },
+  { clave: '07', desc: 'CFDI por aplicación de anticipo' },
+];
+
 @Component({
   selector: 'app-preview',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ConceptosTableComponent, ConceptosEditModalComponent],
   templateUrl: './preview.component.html',
 })
 export class PreviewComponent implements OnInit {
@@ -29,15 +64,21 @@ export class PreviewComponent implements OnInit {
   cliente = input<Cliente | null>(null);
 
   licencia          = signal<LicenciaDto | null>(null);
-  conceptosEditMode = signal(false);
+  conceptosModalOpen = signal(false);
+  pagoModalOpen       = signal(false);
+  /** Open by default when a result carries warnings — closable/reopenable via the floating badge. */
+  warningsOpen      = signal(true);
   ivaRate           = signal<IvaRate>('16');
   isrRatePct        = signal<string>('');
   usoCfdiOverride   = signal<string>('G01');
 
   draft: CfdiFields | null = null;
 
-  readonly usosCfdi   = USOS_CFDI;
-  readonly formasPago = FORMAS_PAGO;
+  readonly usosCfdi     = USOS_CFDI;
+  readonly formasPago   = FORMAS_PAGO;
+  readonly tiposRelacion = TIPOS_RELACION;
+  readonly conceptoColumns   = CONCEPTO_COLUMNS;
+  readonly doctoPagoColumns  = DOCTO_PAGO_COLUMNS;
 
   constructor() {
     effect(() => {
@@ -48,7 +89,9 @@ export class PreviewComponent implements OnInit {
       } else {
         this.draft = null;
       }
-      this.conceptosEditMode.set(false);
+      this.conceptosModalOpen.set(false);
+      this.pagoModalOpen.set(false);
+      this.warningsOpen.set(true);
       if (fields) this.initRatesFromFields(fields);
     });
 
@@ -108,42 +151,34 @@ export class PreviewComponent implements OnInit {
     return `${y}-${m}-${d}`;
   }
 
-  // ── Conceptos edit ────────────────────────────────────────────────────────
+  // ── Conceptos edit (modal) ───────────────────────────────────────────────
+  // The main screen only ever shows a read-only ConceptosTableComponent; all
+  // editing happens on a working copy inside ConceptosEditModalComponent, which
+  // is only applied to `draft` when the user confirms.
 
-  enterConceptosEdit(): void { this.conceptosEditMode.set(true); }
+  blankConcepto = (): Concepto => ({
+    claveProdServ: null, noIdentificacion: null, cantidad: 1,
+    claveUnidad: null, unidad: null, descripcion: null,
+    valorUnitario: 0, importe: 0, descuento: null,
+  });
 
-  cancelConceptosEdit(): void {
-    const fields = this.result().cfdiFields;
-    if (fields) this.draft = structuredClone(fields);
-    this.conceptosEditMode.set(false);
-  }
+  openConceptosModal(): void { this.conceptosModalOpen.set(true); }
+  closeConceptosModal(): void { this.conceptosModalOpen.set(false); }
 
-  confirmConceptosEdit(): void {
-    this.recalcTotals();
-    this.conceptosEditMode.set(false);
-  }
-
-  addConcepto(): void {
+  confirmConceptosModal(rows: Concepto[]): void {
     if (!this.draft) return;
-    const blank: Concepto = {
-      claveProdServ: null, noIdentificacion: null, cantidad: 1,
-      claveUnidad: null, unidad: null, descripcion: null,
-      valorUnitario: 0, importe: 0, descuento: null,
-    };
-    this.draft.conceptos = [...(this.draft.conceptos ?? []), blank];
+    this.draft.conceptos = rows;
+    this.recalcTotals();
+    this.conceptosModalOpen.set(false);
   }
 
-  removeConcepto(index: number): void {
-    if (!this.draft) return;
-    this.draft.conceptos = this.draft.conceptos.filter((_, i) => i !== index);
-    this.recalcTotals();
-  }
-
-  recalcImporte(index: number): void {
-    if (!this.draft) return;
-    const c = this.draft.conceptos[index];
-    c.importe = parseFloat(((c.cantidad ?? 0) * (c.valorUnitario ?? 0)).toFixed(2));
-    this.recalcTotals();
+  /** Live importe recompute while editing inside the modal — mutates the row
+   * object in place (same reference the modal's working copy holds), so the
+   * modal's table reflects it immediately without touching `draft` before Confirm. */
+  onConceptosModalCellChange(event: { row: Concepto; key: string }): void {
+    if (event.key === 'cantidad' || event.key === 'valorUnitario') {
+      event.row.importe = parseFloat(((event.row.cantidad ?? 0) * (event.row.valorUnitario ?? 0)).toFixed(2));
+    }
   }
 
   setIvaRate(rate: IvaRate): void {
@@ -203,6 +238,51 @@ export class PreviewComponent implements OnInit {
   getCurrentFields(): CfdiFields | null {
     if (!this.draft) return null;
     return { ...this.draft, usoCfdi: this.usoCfdiOverride() };
+  }
+
+  // ── Tipo de comprobante (I/E/T/N/P) ──────────────────────────────────────
+
+  onTipoChange(tipo: string): void {
+    if (!this.draft) return;
+    this.draft.tipoDeComprobante = tipo;
+
+    if (tipo === 'P' && !this.draft.pago) {
+      this.draft.pago = {
+        fechaPago: this.todayLocal(),
+        formaDePagoP: '03',
+        monto: 0,
+        numOperacion: null,
+        doctosRelacionados: [],
+      };
+    }
+  }
+
+  // ── Egreso — CFDI relacionados ───────────────────────────────────────────
+
+  relacionadosText(): string {
+    return (this.draft?.cfdiRelacionados ?? []).join(', ');
+  }
+
+  onRelacionadosChange(value: string): void {
+    if (!this.draft) return;
+    const uuids = value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+    this.draft.cfdiRelacionados = uuids.length > 0 ? uuids : null;
+  }
+
+  // ── Pago — complemento REP (modal) ───────────────────────────────────────
+
+  blankDoctoRelacionado = (): DoctoRelacionadoPago => ({
+    uuid: null, serie: null, folio: null, moneda: 'MXN', numParcialidad: '1',
+    impSaldoAnt: 0, impPagado: 0, impSaldoInsoluto: 0, metodoPagoDR: 'PPD', objetoImpDR: '02',
+  });
+
+  openPagoModal(): void { this.pagoModalOpen.set(true); }
+  closePagoModal(): void { this.pagoModalOpen.set(false); }
+
+  confirmPagoModal(rows: DoctoRelacionadoPago[]): void {
+    if (!this.draft?.pago) return;
+    this.draft.pago.doctosRelacionados = rows;
+    this.pagoModalOpen.set(false);
   }
 
   // ── Display helpers ───────────────────────────────────────────────────────

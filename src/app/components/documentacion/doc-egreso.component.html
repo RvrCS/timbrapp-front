@@ -1,0 +1,67 @@
+<div class="flex items-center gap-3 mb-1">
+  <div class="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0">
+    <lucide-icon name="arrow-down-circle" [size]="18" class="text-amber-600"></lucide-icon>
+  </div>
+  <div>
+    <p class="text-xs font-bold text-slate-400 tracking-wide">TIPO E</p>
+    <h2 class="text-lg font-bold text-slate-900 -mt-0.5">Egreso</h2>
+  </div>
+  <span class="ml-auto text-xs font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700">Nota de crédito</span>
+</div>
+<p class="text-sm text-slate-500 mb-6 max-w-2xl">Corriges o devuelves algo de una factura ya emitida.</p>
+
+<p class="text-sm text-slate-600 leading-relaxed mb-4 max-w-2xl">
+  Comúnmente se le llama "nota de crédito". Sirve para descontar o cancelar parte de una factura que ya
+  timbraste — por ejemplo, si el cliente devolvió mercancía o le hiciste un descuento después de facturar.
+</p>
+
+<div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-sm text-indigo-900 mb-6 max-w-2xl">
+  <strong>Úsalo cuando:</strong> necesitas restarle valor a una factura anterior — una devolución, un descuento
+  posterior o una corrección.
+</div>
+
+<h3 class="text-sm font-bold text-slate-800 mb-3">Lo que se agrega respecto a un Ingreso normal</h3>
+<p class="text-sm text-slate-600 leading-relaxed mb-4 max-w-2xl">
+  Al elegir Egreso aparece una sección extra en "Comprobante" llamada <strong>CFDI relacionados</strong>, con 2 campos:
+</p>
+<dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3.5 mb-6 max-w-2xl">
+  <div>
+    <dt class="text-xs font-semibold text-slate-700">UUIDs relacionados</dt>
+    <dd class="text-xs text-slate-500 mt-0.5">El folio único de la factura original que estás corrigiendo — un código como <code class="bg-slate-100 px-1 py-0.5 rounded text-[11px]">45ab1a98-1709-446a-8759-e45a8d76b557</code>. Lo encuentras al pie del PDF de esa factura, o dentro de su archivo XML. Puedes poner más de uno separados por coma si la nota de crédito corresponde a varias facturas.</dd>
+  </div>
+  <div>
+    <dt class="text-xs font-semibold text-slate-700">Tipo de relación</dt>
+    <dd class="text-xs text-slate-500 mt-0.5">El motivo de la relación, según el catálogo del SAT. Para una devolución o descuento normal, usa <strong>01 — Nota de crédito de los documentos relacionados</strong>.</dd>
+  </div>
+</dl>
+
+<h3 class="text-sm font-bold text-slate-800 mb-3">Catálogo completo de "Tipo de relación"</h3>
+<div class="border border-slate-200 rounded-xl overflow-hidden mb-6 max-w-2xl">
+  <table class="w-full text-xs">
+    <tbody class="divide-y divide-slate-100">
+      @for (tr of tiposRelacion; track tr.clave) {
+        <tr>
+          <td class="px-3 py-2 font-mono font-semibold text-slate-700 w-10 align-top">{{ tr.clave }}</td>
+          <td class="px-3 py-2 text-slate-600">{{ tr.desc }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<p class="text-sm text-slate-600 leading-relaxed mb-6 max-w-2xl">
+  El resto es igual que un Ingreso: agregas los conceptos que estás descontando (con su importe) y TimbrApp
+  calcula el IVA de la misma forma. El "Uso CFDI" sugerido para este tipo es <strong>G02 — Devoluciones,
+  descuentos o bonificaciones</strong>.
+</p>
+
+<div class="flex items-start gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl max-w-2xl">
+  <lucide-icon name="help-circle" [size]="16" class="text-amber-500 flex-shrink-0 mt-0.5"></lucide-icon>
+  <div>
+    <p class="text-xs font-semibold text-amber-800 mb-0.5">Validación obligatoria</p>
+    <p class="text-xs text-amber-700">
+      TimbrApp no te deja timbrar un Egreso sin al menos un UUID relacionado y un tipo de relación válido —
+      el botón "Timbrar CFDI" devolverá un error explicando qué falta.
+    </p>
+  </div>
+</div>

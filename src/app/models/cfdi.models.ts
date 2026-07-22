@@ -10,7 +10,7 @@ export interface JobCreatedDto {
 
 export interface JobStatusDto {
   jobId: string;
-  /** 'Queued' | 'Processing' | 'Completed' | 'Failed' */
+  /** 'Completed' | 'Ready' | 'Failed' — 'Ready' means call POST /api/invoice/extract/analyze next. */
   status: string;
   extractionType: ExtractionType | null;
   cfdiFields: CfdiFields | null;
@@ -38,6 +38,29 @@ export interface Impuesto {
   tipoFactor: string | null;
   tasaOCuota: string | null;
   importe: string | null;
+}
+
+/** Documento relacionado de un pago (complemento de Pagos 2.0 / REP). */
+export interface DoctoRelacionadoPago {
+  uuid: string | null;
+  serie: string | null;
+  folio: string | null;
+  moneda: string | null;
+  numParcialidad: string | null;
+  impSaldoAnt: number;
+  impPagado: number;
+  impSaldoInsoluto: number;
+  metodoPagoDR: string | null;
+  objetoImpDR: string | null;
+}
+
+/** Datos del pago (complemento de Pagos 2.0 / REP) para tipoDeComprobante "P". */
+export interface Pago {
+  fechaPago: string | null;
+  formaDePagoP: string | null;
+  monto: number;
+  numOperacion: string | null;
+  doctosRelacionados: DoctoRelacionadoPago[] | null;
 }
 
 export interface CfdiFields {
@@ -81,6 +104,14 @@ export interface CfdiFields {
 
   /** Set when the extracted RfcReceptor matched a registered Receptor in DB (all file types). */
   receptorMatchId: string | null;
+
+  /** SAT catalog c_TipoRelacion. Required when tipoDeComprobante === 'E'. */
+  tipoRelacion: string | null;
+  /** UUIDs of the CFDIs this Egreso relates to. Required when tipoDeComprobante === 'E'. */
+  cfdiRelacionados: string[] | null;
+
+  /** Complemento de Pagos 2.0 / REP. Required when tipoDeComprobante === 'P'. */
+  pago: Pago | null;
 }
 
 // ── View model used throughout the Angular app ────────────────────────────────
@@ -99,4 +130,52 @@ export interface ExtractResult {
   totalPages: number;
   /** @deprecated not returned by async pipeline — always 0 */
   ocrPages: number;
+}
+
+// ── Upload/extraction progress (InvoiceService.extractInvoice) ─────────────────
+// 'uploading' carries a real % from the S3 PUT's HttpProgressEvent. 'preparing' and
+// 'analyzing' have no finer-grained real signal (each is one synchronous backend
+// call) — 'analyzing' only ever appears when the backend actually needs the
+// extractor Lambda (POST /extract responded "Ready"); cache hits and XML skip
+// straight from 'preparing' to 'done'.
+
+export type UploadStageEvent =
+  | { stage: 'uploading'; percent: number }
+  | { stage: 'preparing' }
+  | { stage: 'analyzing' }
+  | { stage: 'done'; result: ExtractResult };
+
+// ── Manual invoice entry (no file upload) ──────────────────────────────────────
+
+/**
+ * Blank CfdiFields for the "factura manual" flow — same shape PreviewComponent
+ * expects from a real extraction, just empty. `conceptos`/`impuestosTrasladados`/
+ * `impuestosRetenidos` must stay `[]` (non-nullable in CfdiFields), and the object
+ * itself must never be null — PreviewComponent.ngOnInit writes to `draft!.lugarExpedicion`
+ * unconditionally once `result().cfdiFields` is set.
+ */
+export function buildBlankCfdiFields(): CfdiFields {
+  return {
+    version: '4.0', serie: null, folio: null, fecha: null,
+    formaPago: '01', noCertificado: null, subTotal: '0', descuento: null,
+    moneda: 'MXN', tipoCambio: null, total: '0',
+    tipoDeComprobante: 'I', exportacion: '01', metodoPago: 'PUE', lugarExpedicion: null,
+    rfcEmisor: null, nombreEmisor: null, regimenFiscalEmisor: null,
+    rfcReceptor: null, nombreReceptor: null, domicilioFiscalReceptor: null,
+    regimenFiscalReceptor: null, usoCfdi: null,
+    conceptos: [],
+    totalImpuestosTrasladados: null, totalImpuestosRetenidos: null,
+    impuestosTrasladados: [], impuestosRetenidos: [],
+    uuid: null, fechaTimbrado: null, noCertificadoSat: null,
+    receptorMatchId: null, tipoRelacion: null, cfdiRelacionados: null, pago: null,
+  };
+}
+
+/** Wraps buildBlankCfdiFields() in the ExtractResult shape PreviewComponent's `result` input expects. */
+export function buildManualExtractResult(): ExtractResult {
+  return {
+    success: true, error: null, extractionType: null,
+    cfdiFields: buildBlankCfdiFields(), warnings: null,
+    rawText: null, totalPages: 0, ocrPages: 0,
+  };
 }

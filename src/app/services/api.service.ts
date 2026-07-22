@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -50,11 +50,14 @@ export class ApiService {
   }
 
   /** PUT raw file bytes directly to an external URL (e.g. S3 presigned). No auth header added.
-   *  `uploadHeaders` comes from the presign response and already includes Content-Type + any KMS headers. */
-  putS3(presignedUrl: string, file: File, uploadHeaders: Record<string, string> = {}): Observable<string> {
+   *  `uploadHeaders` comes from the presign response and already includes Content-Type + any KMS headers.
+   *  Emits raw HttpEvents (including real UploadProgress events) so callers can show upload %. */
+  putS3(presignedUrl: string, file: File, uploadHeaders: Record<string, string> = {}): Observable<HttpEvent<string>> {
     return this.http.put(presignedUrl, file, {
       headers: uploadHeaders,
       responseType: 'text',
+      reportProgress: true,
+      observe: 'events',
     });
   }
 }

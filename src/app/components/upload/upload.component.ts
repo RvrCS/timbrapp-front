@@ -6,6 +6,7 @@ import {
   inject,
   effect,
   OnInit,
+  OnDestroy,
   ViewChild,
   ElementRef,
   HostListener,
@@ -18,7 +19,17 @@ import { ExtractResult } from '../../models/cfdi.models';
 import { Cliente, ClienteForm, REGIMENES_FISCALES, USOS_CFDI } from '../../models/cliente.models';
 import { formatHttpError } from '../../utils/http-error.utils';
 
-type UploadState = 'idle' | 'dragging' | 'uploading' | 'done' | 'error';
+type UploadState = 'idle' | 'dragging' | 'uploading' | 'preparing' | 'analyzing' | 'done' | 'error';
+
+/** Rotating, honest-atmosphere copy for the 'analyzing' stage — there's no finer
+ * real signal than "the Lambda/Bedrock call is in flight" (see InvoiceService). */
+const ANALYZING_MESSAGES = [
+  'Leyendo el documento…',
+  'Identificando productos y precios…',
+  'Verificando datos fiscales…',
+  'Casi listo…',
+];
+const ANALYZING_MESSAGE_INTERVAL_MS = 2500;
 
 type PendingForm = {
   rfc: string;
@@ -45,7 +56,7 @@ const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
   imports: [CommonModule, RouterLink],
   templateUrl: './upload.component.html',
 })
-export class UploadComponent implements OnInit {
+export class UploadComponent implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInputRef!: ElementRef<HTMLInputElement>;
 
   private readonly invoiceService = inject(InvoiceService);
@@ -54,9 +65,15 @@ export class UploadComponent implements OnInit {
   readonly regimenes = REGIMENES_FISCALES;
   readonly usosCfdi  = USOS_CFDI;
 
-  state    = signal<UploadState>('idle');
-  errorMsg = signal<string | null>(null);
-  fileName = signal<string | null>(null);
+  state         = signal<UploadState>('idle');
+  errorMsg      = signal<string | null>(null);
+  fileName      = signal<string | null>(null);
+  uploadPercent = signal(0);
+  analyzingMessage = signal(ANALYZING_MESSAGES[0]);
+  private analyzingTimer: ReturnType<typeof setInterval> | null = null;
+
+  /** True when the user chose "Crear factura en blanco" — dropzone is replaced by that panel. */
+  manualMode = signal(false);
 
   selectedCliente   = signal<Cliente | null>(null);
   dropdownOpen      = signal(false);
@@ -67,11 +84,14 @@ export class UploadComponent implements OnInit {
   addClienteError   = signal<string | null>(null);
   private pendingId = signal<string | null>(null);
 
-  isIdle      = computed(() => this.state() === 'idle');
-  isDragging  = computed(() => this.state() === 'dragging');
-  isUploading = computed(() => this.state() === 'uploading');
-  isDone      = computed(() => this.state() === 'done');
-  isError     = computed(() => this.state() === 'error');
+  isIdle       = computed(() => this.state() === 'idle');
+  isDragging   = computed(() => this.state() === 'dragging');
+  isUploading  = computed(() => this.state() === 'uploading');
+  isPreparing  = computed(() => this.state() === 'preparing');
+  isAnalyzing  = computed(() => this.state() === 'analyzing');
+  isBusy       = computed(() => ['uploading', 'preparing', 'analyzing'].includes(this.state()));
+  isDone       = computed(() => this.state() === 'done');
+  isError      = computed(() => this.state() === 'error');
 
   canAddCliente = computed(() => {
     const f = this.pendingForm();
@@ -89,7 +109,8 @@ export class UploadComponent implements OnInit {
     });
   });
 
-  extracted = output<ExtractResult>();
+  extracted   = output<ExtractResult>();
+  manualStart = output<void>();
 
   constructor() {
     // When clientes load after extraction, apply any pending auto-selection
@@ -219,7 +240,7 @@ export class UploadComponent implements OnInit {
   onDragOver(event: DragEvent): void {
     event.preventDefault();
     event.stopPropagation();
-    if (this.state() !== 'uploading' && this.state() !== 'done') {
+    if (!this.isBusy() && this.state() !== 'done') {
       this.state.set('dragging');
     }
   }
@@ -233,7 +254,7 @@ export class UploadComponent implements OnInit {
   onDrop(event: DragEvent): void {
     event.preventDefault();
     event.stopPropagation();
-    if (this.state() === 'uploading') return;
+    if (this.isBusy()) return;
     const files = event.dataTransfer?.files;
     if (files && files.length > 0) this.processFile(files[0]);
     else this.state.set('idle');
@@ -245,7 +266,7 @@ export class UploadComponent implements OnInit {
   }
 
   openFilePicker(): void {
-    if (this.state() === 'uploading') return;
+    if (this.isBusy()) return;
     this.fileInputRef.nativeElement.value = '';
     this.fileInputRef.nativeElement.click();
   }
@@ -254,10 +275,36 @@ export class UploadComponent implements OnInit {
     this.state.set('idle');
     this.errorMsg.set(null);
     this.fileName.set(null);
+    this.uploadPercent.set(0);
+    this.stopAnalyzingMessages();
     this.unmatchedReceptor.set(null);
     this.pendingForm.set(null);
     this.addClienteError.set(null);
     this.selectedCliente.set(null);
+  }
+
+  startManual(): void {
+    this.manualStart.emit();
+  }
+
+  ngOnDestroy(): void {
+    this.stopAnalyzingMessages();
+  }
+
+  private startAnalyzingMessages(): void {
+    let i = 0;
+    this.analyzingMessage.set(ANALYZING_MESSAGES[0]);
+    this.analyzingTimer = setInterval(() => {
+      i = (i + 1) % ANALYZING_MESSAGES.length;
+      this.analyzingMessage.set(ANALYZING_MESSAGES[i]);
+    }, ANALYZING_MESSAGE_INTERVAL_MS);
+  }
+
+  private stopAnalyzingMessages(): void {
+    if (this.analyzingTimer !== null) {
+      clearInterval(this.analyzingTimer);
+      this.analyzingTimer = null;
+    }
   }
 
   private readonly ACCEPTED_EXTENSIONS = [
@@ -284,11 +331,33 @@ export class UploadComponent implements OnInit {
 
     this.fileName.set(file.name);
     this.state.set('uploading');
+    this.uploadPercent.set(0);
     this.errorMsg.set(null);
 
     this.invoiceService.extractInvoice(file).subscribe({
-      next: (result) => { this.state.set('done'); this.extracted.emit(result); },
+      next: (event) => {
+        switch (event.stage) {
+          case 'uploading':
+            this.state.set('uploading');
+            this.uploadPercent.set(event.percent);
+            break;
+          case 'preparing':
+            this.stopAnalyzingMessages();
+            this.state.set('preparing');
+            break;
+          case 'analyzing':
+            this.state.set('analyzing');
+            this.startAnalyzingMessages();
+            break;
+          case 'done':
+            this.stopAnalyzingMessages();
+            this.state.set('done');
+            this.extracted.emit(event.result);
+            break;
+        }
+      },
       error: (err) => {
+        this.stopAnalyzingMessages();
         this.state.set('error');
         this.errorMsg.set(formatHttpError(err, 'Ocurrió un error al procesar el archivo.'));
       },

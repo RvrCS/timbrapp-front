@@ -3,7 +3,7 @@ import { CommonModule, CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { UploadComponent } from '../upload/upload.component';
 import { PreviewComponent } from '../preview/preview.component';
-import { ExtractResult } from '../../models/cfdi.models';
+import { ExtractResult, buildManualExtractResult } from '../../models/cfdi.models';
 import { TimbradoService } from '../../services/timbrado.service';
 import { TimbradoDto, TimbradoUsoDto } from '../../models/timbrado.models';
 import { ParsedError, parseHttpError } from '../../utils/http-error.utils';
@@ -68,7 +68,7 @@ type TimbradoState = 'idle' | 'loading' | 'success' | 'error';
 
       <!-- Upload card -->
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 mb-6">
-        <app-upload #uploadRef (extracted)="onExtracted($event)" />
+        <app-upload #uploadRef (extracted)="onExtracted($event)" (manualStart)="startManualDraft()" />
       </div>
 
       <!-- Preview -->
@@ -278,6 +278,14 @@ export class SubirComponent {
         r.cfdiFields?.usoCfdi ?? null,
       );
     }
+  }
+
+  /** Entry point for "Crear factura en blanco" — bypasses extraction entirely. */
+  startManualDraft(): void {
+    this.result.set(buildManualExtractResult());
+    this.timbradoState.set('idle');
+    this.timbradoResult.set(null);
+    this.timbradoError.set(null);
   }
 
   onTimbrar(): void {

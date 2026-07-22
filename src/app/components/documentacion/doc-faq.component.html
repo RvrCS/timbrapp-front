@@ -1,0 +1,78 @@
+<h2 class="text-lg font-bold text-slate-900 mb-1">Preguntas frecuentes</h2>
+<p class="text-sm text-slate-500 mb-6 max-w-2xl">Las dudas más comunes — de negocios pequeños y de despachos contables.</p>
+
+<div class="flex flex-col divide-y divide-slate-100 max-w-2xl">
+
+  <details class="py-3 group">
+    <summary class="flex items-center justify-between gap-3 cursor-pointer list-none text-sm font-semibold text-slate-800">
+      ¿Qué significa "timbrar"?
+      <svg class="w-4 h-4 text-slate-400 flex-shrink-0 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </summary>
+    <p class="text-sm text-slate-500 mt-2">Es el paso final que hace que tu factura sea oficial: el SAT la valida y le asigna un folio único (UUID). Una factura sin timbrar no tiene validez fiscal — es solo un borrador.</p>
+  </details>
+
+  <details class="py-3 group">
+    <summary class="flex items-center justify-between gap-3 cursor-pointer list-none text-sm font-semibold text-slate-800">
+      ¿Qué es el SAT y qué es un RFC?
+      <svg class="w-4 h-4 text-slate-400 flex-shrink-0 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </summary>
+    <p class="text-sm text-slate-500 mt-2">El SAT (Servicio de Administración Tributaria) es la autoridad fiscal de México — valida toda factura electrónica del país. El RFC es el identificador fiscal de una persona o empresa ante el SAT; cada factura necesita el RFC de quien la emite y de quien la recibe.</p>
+  </details>
+
+  <details class="py-3 group">
+    <summary class="flex items-center justify-between gap-3 cursor-pointer list-none text-sm font-semibold text-slate-800">
+      ¿Qué es el UUID y dónde lo encuentro?
+      <svg class="w-4 h-4 text-slate-400 flex-shrink-0 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </summary>
+    <p class="text-sm text-slate-500 mt-2">Es el folio que identifica a una factura de forma única en todo México, con este formato: <code class="bg-slate-100 px-1 py-0.5 rounded text-xs">45ab1a98-1709-446a-8759-e45a8d76b557</code>. Lo necesitas para hacer un Egreso o un Pago relacionados a otra factura. Lo encuentras en el PDF de esa factura (usualmente al pie) o en su archivo XML.</p>
+  </details>
+
+  <details class="py-3 group">
+    <summary class="flex items-center justify-between gap-3 cursor-pointer list-none text-sm font-semibold text-slate-800">
+      Me equivoqué en un dato antes de timbrar, ¿pasa algo?
+      <svg class="w-4 h-4 text-slate-400 flex-shrink-0 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </summary>
+    <p class="text-sm text-slate-500 mt-2">Nada — puedes corregir cualquier campo mientras revisas los datos, antes de confirmar. El sistema no timbra nada hasta que tú lo confirmes.</p>
+  </details>
+
+  <details class="py-3 group">
+    <summary class="flex items-center justify-between gap-3 cursor-pointer list-none text-sm font-semibold text-slate-800">
+      Ya timbré y me di cuenta de un error, ¿puedo cancelar?
+      <svg class="w-4 h-4 text-slate-400 flex-shrink-0 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </summary>
+    <p class="text-sm text-slate-500 mt-2">Sí. Desde <strong>Timbrados</strong> puedes cancelar un comprobante ya timbrado indicando el motivo. Si lo que necesitas es corregir un monto en vez de anular todo, normalmente se hace con un Egreso (nota de crédito) en lugar de cancelar.</p>
+  </details>
+
+  <details class="py-3 group">
+    <summary class="flex items-center justify-between gap-3 cursor-pointer list-none text-sm font-semibold text-slate-800">
+      Mi cliente no aparece en la lista, ¿qué hago?
+      <svg class="w-4 h-4 text-slate-400 flex-shrink-0 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </summary>
+    <p class="text-sm text-slate-500 mt-2">Si TimbrApp encuentra los datos de un cliente nuevo al leer tu documento, te ofrece agregarlo directamente. También puedes registrarlo de antemano desde <strong>Clientes</strong> en el menú lateral.</p>
+  </details>
+
+  <details class="py-3 group">
+    <summary class="flex items-center justify-between gap-3 cursor-pointer list-none text-sm font-semibold text-slate-800">
+      Atiendo a varios clientes distintos (despacho contable) — ¿uso una sola cuenta de TimbrApp para todos?
+      <svg class="w-4 h-4 text-slate-400 flex-shrink-0 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </summary>
+    <p class="text-sm text-slate-500 mt-2">No. Cada cuenta de TimbrApp está ligada a un solo RFC emisor (el negocio que factura) y a un solo certificado de sello digital. Si administras la facturación de varios negocios distintos, cada uno necesita su propia cuenta/licencia de TimbrApp — no se pueden mezclar en una sola. Los "clientes" que registras dentro de una cuenta son los <strong>receptores</strong> (a quién le factura ESE negocio), no negocios emisores adicionales.</p>
+  </details>
+
+  <details class="py-3 group">
+    <summary class="flex items-center justify-between gap-3 cursor-pointer list-none text-sm font-semibold text-slate-800">
+      ¿Qué pasa si subo el mismo documento dos veces?
+      <svg class="w-4 h-4 text-slate-400 flex-shrink-0 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </summary>
+    <p class="text-sm text-slate-500 mt-2">TimbrApp reconoce que ya analizó ese archivo antes y te devuelve el resultado guardado al instante, sin volver a usar inteligencia artificial — así ahorras tiempo si necesitas revisar o corregir algo de un documento que ya subiste.</p>
+  </details>
+
+  <details class="py-3 group">
+    <summary class="flex items-center justify-between gap-3 cursor-pointer list-none text-sm font-semibold text-slate-800">
+      ¿Necesito saber de contabilidad para usar TimbrApp?
+      <svg class="w-4 h-4 text-slate-400 flex-shrink-0 transition-transform group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+    </summary>
+    <p class="text-sm text-slate-500 mt-2">No, para el caso más común (facturar de contado a un cliente) basta con seguir los <a routerLink="/documentacion/primeros-pasos" class="text-indigo-600 hover:underline">primeros pasos</a>. Egreso y Pago requieren un poco más de contexto — por eso tienen su propia sección con ejemplos.</p>
+  </details>
+
+</div>

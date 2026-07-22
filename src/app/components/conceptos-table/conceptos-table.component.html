@@ -1,0 +1,140 @@
+<div class="flex flex-col h-full min-h-0">
+
+  @if (showSearch()) {
+    <div class="px-4 py-2 border-b border-slate-100 flex-shrink-0 flex items-center justify-between gap-3">
+      <input type="text" [ngModel]="searchQuery()" (ngModelChange)="onSearchChange($event)"
+        placeholder="Buscar…"
+        class="w-full max-w-xs rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+      @if (searchQuery()) {
+        <span class="text-xs text-slate-400 whitespace-nowrap">{{ visibleRows() }} / {{ totalRows() }}</span>
+      }
+    </div>
+  }
+
+  <div class="overflow-y-auto overflow-x-auto flex-1" [style.min-height.px]="tableMinHeightPx()">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 border-b border-slate-200 sticky top-0 z-10">
+        <tr>
+          @for (col of columns(); track col.key) {
+            <th [style.width]="col.width"
+                [class]="'px-3 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wider select-none ' +
+                         alignClass(col.align) + (col.sortable !== false ? ' cursor-pointer hover:text-slate-700' : '')"
+                (click)="toggleSort(col)">
+              {{ col.header }}
+              @if (sortKey() === col.key) {
+                <span class="ml-0.5 text-indigo-500">{{ sortDir() === 'asc' ? '▲' : '▼' }}</span>
+              }
+            </th>
+          }
+          @if (mode() === 'edit' && showRemove()) {
+            <th class="w-8 px-2"></th>
+          }
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+
+        @for (item of pagedIndexed(); track item.originalIndex) {
+          <tr class="hover:bg-slate-50 transition-colors align-top">
+            @for (col of columns(); track col.key) {
+              <td class="px-3 py-2.5">
+                @if (mode() === 'edit' && col.editable !== false) {
+
+                  @if (col.type === 'select') {
+                    <select [ngModel]="item.row[col.key]"
+                      (ngModelChange)="onFieldInput(item, col.key, $event)"
+                      class="w-full rounded-md border border-slate-300 bg-white px-1.5 py-1 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-400">
+                      @for (opt of col.options; track opt.value) {
+                        <option [value]="opt.value">{{ opt.label }}</option>
+                      }
+                    </select>
+                  } @else {
+                    <input [ngModel]="item.row[col.key]"
+                      (ngModelChange)="onFieldInput(item, col.key, $event)"
+                      [type]="col.type === 'text' ? 'text' : 'number'"
+                      [step]="col.step ?? (col.type === 'currency' ? 0.01 : 1)"
+                      [placeholder]="col.placeholder ?? ''"
+                      [class]="'block w-full rounded-md border border-slate-300 bg-white px-1.5 py-1 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-400 ' +
+                               (col.type !== 'text' ? 'font-mono ' + alignClass(col.align) : '')" />
+                  }
+
+                  @if (col.subKey) {
+                    <input [ngModel]="item.row[col.subKey]"
+                      (ngModelChange)="onFieldInput(item, col.subKey, $event)"
+                      [placeholder]="col.subPlaceholder ?? ''"
+                      class="block w-full mt-1 rounded-md border border-slate-300 bg-white px-1.5 py-1 text-xs font-mono text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-400" />
+                  }
+
+                } @else {
+
+                  <p [class]="'text-slate-700 ' + (col.type !== 'text' ? 'font-mono ' + alignClass(col.align) : '')">
+                    {{ formatValue(item.row, col) }}
+                  </p>
+                  @if (col.subKey && item.row[col.subKey]) {
+                    <p class="text-xs text-slate-400 font-mono mt-0.5">{{ item.row[col.subKey] }}</p>
+                  }
+
+                }
+              </td>
+            }
+            @if (mode() === 'edit' && showRemove()) {
+              <td class="px-2 py-2.5 text-center">
+                <button (click)="onRemove(item.originalIndex)"
+                  class="text-red-400 hover:text-red-600 transition-colors p-0.5 rounded hover:bg-red-50">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </td>
+            }
+          </tr>
+        }
+
+        @if (pagedIndexed().length === 0) {
+          <tr>
+            <td [attr.colspan]="columns().length + (showRemove() ? 1 : 0)"
+                class="px-4 py-8 text-center text-sm text-slate-400">
+              {{ emptyMessage() }}
+            </td>
+          </tr>
+        }
+
+      </tbody>
+    </table>
+  </div>
+
+  <div class="border-t border-slate-100 flex-shrink-0 px-4 py-2.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+
+    <div class="flex items-center gap-2 order-2 sm:order-1">
+      <span class="text-xs text-slate-400 whitespace-nowrap">Mostrar</span>
+      <select [ngModel]="effectivePageSize()" (ngModelChange)="onPageSizeChange($event)"
+        class="rounded-md border border-slate-300 bg-white pl-2 pr-1 py-1 text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-400">
+        @for (size of pageSizeOptions; track size) {
+          <option [ngValue]="size">{{ size }}</option>
+        }
+      </select>
+      <span class="text-xs text-slate-400 whitespace-nowrap">de {{ visibleRows() }}</span>
+    </div>
+
+    <div class="flex items-center justify-between sm:justify-end gap-3 order-1 sm:order-2">
+      <span class="text-xs text-slate-400 whitespace-nowrap">Página {{ currentPage() }} de {{ totalPages() }}</span>
+      <div class="flex items-center gap-1">
+        <button (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1"
+          aria-label="Página anterior"
+          class="p-1.5 rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <button (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()"
+          aria-label="Página siguiente"
+          class="p-1.5 rounded-md border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</div>

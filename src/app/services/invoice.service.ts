@@ -1,9 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, of, switchMap, timer, filter, take, map } from 'rxjs';
+import { HttpEventType } from '@angular/common/http';
+import { Observable, concat, of } from 'rxjs';
+import { concatMap, map, filter } from 'rxjs';
 import { ApiService } from './api.service';
 import {
   ExtractResult,
   JobStatusDto,
+  UploadStageEvent,
 } from '../models/cfdi.models';
 
 interface PresignResponse {
@@ -14,41 +17,62 @@ interface PresignResponse {
   uploadHeaders?: Record<string, string>;
 }
 
-const POLL_INTERVAL_MS = 2_000;
-
 @Injectable({ providedIn: 'root' })
 export class InvoiceService {
   private readonly api = inject(ApiService);
 
-  extractInvoice(file: File, force = false): Observable<ExtractResult> {
+  /**
+   * Presigns, uploads to S3 (real progress), then runs extraction in up to two
+   * synchronous backend calls: POST /extract (fast path — cache hit or XML
+   * resolve here) and, only if that responds "Ready", POST /extract/analyze
+   * (the slow Bedrock call). Both calls are fully synchronous end-to-end —
+   * this API runs as a Lambda in QA/prod, so nothing can keep working in the
+   * background after an HTTP response is sent.
+   */
+  extractInvoice(file: File, force = false): Observable<UploadStageEvent> {
     return this.api.post<PresignResponse>('/api/invoice/presign', { fileName: file.name }).pipe(
-      switchMap((presign) =>
-        this.api.putS3(presign.presignedUrl, file, presign.uploadHeaders ?? {}).pipe(
-          switchMap(() =>
-            this.api.post<JobStatusDto>('/api/invoice/extract', {
-              s3Key: presign.s3Key,
-              s3Bucket: presign.s3Bucket,
-              fileName: file.name,
-              force,
-            })
-          )
+      concatMap((presign) =>
+        concat(
+          this.uploadToS3(presign, file),
+          this.runExtraction(presign, file.name, force),
         )
       ),
-      switchMap((created) => {
-        if (created.status === 'Completed') {
-          return of(created).pipe(map((s) => this.toExtractResult(s)));
+    );
+  }
+
+  private uploadToS3(presign: PresignResponse, file: File): Observable<UploadStageEvent> {
+    return this.api.putS3(presign.presignedUrl, file, presign.uploadHeaders ?? {}).pipe(
+      filter((event) => event.type === HttpEventType.UploadProgress || event.type === HttpEventType.Response),
+      map((event): UploadStageEvent => {
+        if (event.type === HttpEventType.UploadProgress) {
+          const percent = event.total ? Math.round((100 * event.loaded) / event.total) : 0;
+          return { stage: 'uploading', percent };
         }
-        return timer(0, POLL_INTERVAL_MS).pipe(
-          switchMap(() =>
-            this.api.get<JobStatusDto>(
-              `/api/invoice/extract/${created.jobId}/status`
-            )
-          ),
-          filter((s) => s.status === 'Completed' || s.status === 'Failed'),
-          take(1),
-          map((s) => this.toExtractResult(s))
-        );
-      })
+        // Response event — upload finished; the next stage ('preparing') is
+        // emitted separately once the /extract call actually starts.
+        return { stage: 'uploading', percent: 100 };
+      }),
+    );
+  }
+
+  private runExtraction(presign: PresignResponse, fileName: string, force: boolean): Observable<UploadStageEvent> {
+    const body = { s3Key: presign.s3Key, s3Bucket: presign.s3Bucket, fileName, force };
+
+    return concat(
+      of<UploadStageEvent>({ stage: 'preparing' }),
+      this.api.post<JobStatusDto>('/api/invoice/extract', body).pipe(
+        concatMap((first): Observable<UploadStageEvent> => {
+          if (first.status !== 'Ready') {
+            return of({ stage: 'done', result: this.toExtractResult(first) });
+          }
+          return concat(
+            of<UploadStageEvent>({ stage: 'analyzing' }),
+            this.api.post<JobStatusDto>('/api/invoice/extract/analyze', body).pipe(
+              map((second) => ({ stage: 'done', result: this.toExtractResult(second) }) as UploadStageEvent),
+            ),
+          );
+        }),
+      ),
     );
   }
 

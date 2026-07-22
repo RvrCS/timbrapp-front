@@ -9,3 +9,37 @@
     @apply w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition placeholder-slate-400 bg-white;
   }
 }
+
+/* ── Vista imprimible de Documentación (doc-imprimir.component) ──────────────
+   Global (no encapsulado) porque necesita alcanzar los <details> dentro de los
+   componentes hijos de contenido, que viven en su propio Shadow-DOM-like
+   encapsulation de Angular. */
+@media print {
+  .no-print { display: none !important; }
+
+  .doc-print * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Los FAQ usan <details> nativo cerrado por default — al imprimir deben verse abiertos. */
+  .doc-print details > *:not(summary) {
+    display: block !important;
+  }
+  .doc-print details summary svg {
+    display: none;
+  }
+
+  .doc-print .doc-section {
+    break-inside: avoid-page;
+    padding-top: 24px;
+  }
+  .doc-print .doc-section:first-of-type {
+    padding-top: 0;
+  }
+
+  @page {
+    size: letter;
+    margin: 0.65in 0.7in;
+  }
+}

@@ -170,6 +170,12 @@ type TimbradoState = 'idle' | 'loading' | 'success' | 'error';
                 </div>
               </div>
 
+              @if (timbradoResult()!.yaExistia) {
+                <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                  Este CFDI ya había sido timbrado. Mostramos el timbrado existente; no se generó otro CFDI ni se consumió un timbrado adicional.
+                </div>
+              }
+
               <!-- Details grid -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div class="bg-slate-50 rounded-xl px-4 py-3">

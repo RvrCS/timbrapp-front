@@ -51,6 +51,8 @@ export interface TimbradoDto {
   xmlBase64:      string | null;
   /** Base64-encoded PDF */
   pdfBase64:      string | null;
+  /** True when the API returned a previously stamped CFDI for a repeated submission. */
+  yaExistia:      boolean;
   extractionType: string | null;
   errorFacturama: string | null;
 }
